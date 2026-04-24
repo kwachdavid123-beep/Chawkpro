@@ -81,7 +81,7 @@ function fbErr(code) {
     'auth/too-many-requests': 'Too many attempts. Try later.',
     'auth/network-request-failed': 'No internet connection'
   };
-  return m[code] || 'Something went wrong. Try again.';
+  return m[code] || (code ? "Error: " + code : "Something went wrong. Try again.");
 }
 
 // ── LOADER ────────────────────────────────────────────
@@ -155,7 +155,7 @@ async function handleRegister() {
     enterCloudApp('owner', shopName);
   } catch (e) {
     hideCloudLoader();
-    errEl.textContent = fbErr(e.code); errEl.classList.add('show');
+    errEl.textContent = fbErr(e.code) + (e.code ? " ["+e.code+"]" : ""); errEl.classList.add("show");
   }
 }
 
@@ -232,7 +232,7 @@ async function handleCloudLogin() {
     errEl.classList.add('show');
   } catch (e) {
     hideCloudLoader();
-    errEl.textContent = fbErr(e.code); errEl.classList.add('show');
+    errEl.textContent = fbErr(e.code) + (e.code ? " ["+e.code+"]" : ""); errEl.classList.add("show");
   }
 }
 
