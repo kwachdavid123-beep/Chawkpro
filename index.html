@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CHAWKPRO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="CHAWKPRO">
+<meta name="description" content="CHAWKPRO TRACKER — Premium Sales Management">
+<meta name="theme-color" content="#0a0a0f">
+<title>CHAWKPRO TRACKER</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<!-- fonts embedded via CSS stack -->
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --gold: #f5c518;
+    --gold2: #e8b000;
+    --green: #00d97e;
+    --red: #ff4757;
+    --blue: #4a90e2;
+    --text: #f0f0f5;
+    --muted: #7a7a9a;
+    --font-display: 'Arial Black', 'Impact', 'Franklin Gothic Bold', sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ── SPLASH ── */
+  #splash {
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #1a1a2e 0%, #0a0a0f 70%);
+    position: relative;
+    overflow: hidden;
+  }
+  #splash::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(245,197,24,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:.6;transform:translate(-50%,-60%) scale(1);} 50%{opacity:1;transform:translate(-50%,-60%) scale(1.15);} }
+
+  .splash-logo {
+    text-align: center;
+    z-index: 1;
+    animation: fadeUp .8s ease forwards;
+  }
+  .splash-icon {
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 40px rgba(245,197,24,0.4);
+    animation: iconDrop .6s cubic-bezier(0.175,0.885,0.32,1.275) .2s both;
+  }
+  @keyframes iconDrop { from{opacity:0;transform:scale(.4) rotate(-10deg);} to{opacity:1;transform:scale(1) rotate(0deg);} }
+  .splash-title {
+    font-family: var(--font-display);
+    font-size: 48px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .splash-sub { color: var(--muted); font-size: 13px; letter-spacing: 4px; text-transform: uppercase; margin-top: 6px; }
+  .splash-loader {
+    width: 120px; height: 3px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 40px auto 0;
+    overflow: hidden;
+  }
+  .splash-loader-bar {
+    height: 100%; width: 0;
+    background: var(--gold);
+    border-radius: 3px;
+    animation: load 2s ease forwards .5s;
+  }
+  @keyframes load { to { width: 100%; } }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+
+  /* ── LOGIN ── */
+  #login {
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 24px;
+  }
+  .login-card {
+    width: 100%; max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 28px;
+    box-shadow: var(--shadow);
+    animation: fadeUp .5s ease;
+  }
+  .login-brand { text-align: center; margin-bottom: 32px; }
+  .login-brand .brand-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin: 0 auto 12px;
+  }
+  .login-brand h1 { font-family: var(--font-display); font-size: 32px; color: var(--gold); letter-spacing: 2px; }
+  .login-brand p { color: var(--muted); font-size: 12px; }
+
+  .user-select { margin-bottom: 24px; }
+  .user-select label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+  .user-select select {
+    width: 100%; padding: 12px 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: var(--font-body);
+    font-size: 15px; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a9a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+  }
+
+  .pin-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .pin-dots { display: flex; gap: 12px; justify-content: center; margin-bottom: 28px; }
+  .pin-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border); background: transparent;
+    transition: all .2s;
+  }
+  .pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .key {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 10px;
+    font-size: 20px; font-weight: 600; color: var(--text);
+    cursor: pointer; text-align: center;
+    transition: all .15s; user-select: none;
+    font-family: var(--font-body);
+  }
+  .key:active { background: var(--gold); color: #000; transform: scale(.95); }
+  .key.del { font-size: 16px; }
+  .key.empty { background: transparent; border-color: transparent; cursor: default; }
+
+  .login-error { color: var(--red); font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; }
+
+  /* ── APP SHELL ── */
+  #app { flex-direction: column; background: var(--bg); }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar-brand { font-family: var(--font-display); font-size: 22px; color: var(--gold); letter-spacing: 2px; }
+  .top-bar-user {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 6px 12px;
+    font-size: 13px; cursor: pointer;
+  }
+  .role-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .role-owner { background: rgba(245,197,24,.15); color: var(--gold); }
+  .role-staff { background: rgba(74,144,226,.15); color: var(--blue); }
+
+  .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    cursor: pointer; padding: 4px 0;
+    transition: all .2s; color: var(--muted); font-size: 10px;
+    font-weight: 500; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .nav-item.active { color: var(--gold); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: var(--gold); }
+
+  /* ── TABS ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-title { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── STAT GRID ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+  .stat-value { font-family: var(--font-display); font-size: 28px; color: var(--text); line-height: 1; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.gold { color: var(--gold); }
+  .stat-value.red { color: var(--red); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: 10px; font-family: var(--font-body);
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    transition: all .2s; letter-spacing: .3px;
+  }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-gold:active { background: var(--gold2); transform: scale(.97); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:active { background: var(--surface2); }
+  .btn-red { background: rgba(255,71,87,.15); color: var(--red); border: 1px solid rgba(255,71,87,.3); }
+  .btn-green { background: rgba(0,217,126,.15); color: var(--green); border: 1px solid rgba(0,217,126,.3); }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; display: block; margin-bottom: 7px; }
+  .form-input {
+    width: 100%; padding: 12px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: var(--font-body);
+    font-size: 15px;
+  }
+  .form-input:focus { outline: none; border-color: var(--gold); }
+  .form-input::placeholder { color: var(--muted); }
+  select.form-input { appearance: none; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── COLOR PICKER ── */
+  .color-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .color-swatch {
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; transition: all .15s;
+  }
+  .color-swatch.selected { border-color: #fff; transform: scale(1.15); }
+
+  /* ── STOCK LIST ── */
+  .item-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-color { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .item-stock { text-align: right; }
+  .stock-num { font-family: var(--font-display); font-size: 24px; }
+  .low-stock { color: var(--red); }
+  .ok-stock { color: var(--green); }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  }
+  .badge-cash { background: rgba(0,217,126,.15); color: var(--green); }
+  .badge-debt { background: rgba(255,71,87,.15); color: var(--red); }
+  .badge-partial { background: rgba(245,197,24,.15); color: var(--gold); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    z-index: 500; display: none; align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px;
+    width: 100%; max-width: 500px;
+    max-height: 90vh; overflow-y: auto;
+    animation: slideUp .3s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  @keyframes slideUp { from{transform:translateY(100%);} to{transform:translateY(0);} }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 20px; }
+  .modal-title { font-family: var(--font-display); font-size: 26px; color: var(--gold); margin-bottom: 20px; letter-spacing: 1px; }
+
+  /* ── CHART ── */
+  .chart-wrap { position: relative; height: 160px; width: 100%; }
+  canvas { width: 100% !important; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-track { height: 8px; background: var(--surface2); border-radius: 8px; overflow: hidden; margin: 8px 0; }
+  .progress-bar { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--gold), var(--green)); transition: width .6s ease; }
+
+  /* ── ALERT ── */
+  .alert {
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px; font-size: 14px;
+  }
+  .alert-red { background: rgba(255,71,87,.1); border: 1px solid rgba(255,71,87,.3); color: var(--red); }
+  .alert-gold { background: rgba(245,197,24,.1); border: 1px solid rgba(245,197,24,.3); color: var(--gold); }
+
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 1px; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── DEBT CARD ── */
+  .debt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .debt-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .debt-name { font-weight: 700; font-size: 16px; }
+  .debt-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .debt-amounts { display: flex; gap: 16px; margin-bottom: 10px; font-size: 13px; }
+  .debt-item { }
+  .debt-item-label { color: var(--muted); font-size: 11px; }
+  .debt-item-val { font-weight: 600; margin-top: 2px; }
+  .installment-list { margin-top: 10px; }
+  .inst-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .inst-row:last-child { border: none; }
+
+  /* ── USERS PANEL ── */
+  .user-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .user-row:last-child { border: none; }
+  .user-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; color: #000;
+  }
+
+  .period-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+  .period-btn {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    cursor: pointer; transition: all .2s;
+  }
+  .period-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 500;
+    z-index: 1000; opacity: 0; transition: opacity .3s; pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  .toast.info { border-color: var(--gold); color: var(--gold); }
+
+  .whatsapp-btn {
+    display: flex; align-items: center; gap: 8px; font-size: 13px;
+    color: #25D366; cursor: pointer; padding: 8px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" class="screen active">
+  <div class="splash-logo">
+    <div class="splash-icon">📊</div>
+    <div class="splash-title">CHAWKPRO</div>
+    <div class="splash-sub">Tracker · Premium Edition</div>
+    <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon">📊</div>
+      <h1>CHAWKPRO</h1>
+      <p>SALES TRACKER</p>
+    </div>
+
+    <div class="user-select">
+      <label>Select Account</label>
+      <select id="loginUser" class="form-input" onchange="updateLoginUser()">
+      </select>
+    </div>
+
+    <div class="pin-label">Enter PIN</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="dot0"></div>
+      <div class="pin-dot" id="dot1"></div>
+      <div class="pin-dot" id="dot2"></div>
+      <div class="pin-dot" id="dot3"></div>
+      <div class="pin-dot" id="dot4"></div>
+      <div class="pin-dot" id="dot5"></div>
+    </div>
+
+    <div class="keypad">
+      <div class="key" onclick="pinPress('1')">1</div>
+      <div class="key" onclick="pinPress('2')">2</div>
+      <div class="key" onclick="pinPress('3')">3</div>
+      <div class="key" onclick="pinPress('4')">4</div>
+      <div class="key" onclick="pinPress('5')">5</div>
+      <div class="key" onclick="pinPress('6')">6</div>
+      <div class="key" onclick="pinPress('7')">7</div>
+      <div class="key" onclick="pinPress('8')">8</div>
+      <div class="key" onclick="pinPress('9')">9</div>
+      <div class="key empty"></div>
+      <div class="key" onclick="pinPress('0')">0</div>
+      <div class="key del" onclick="pinDel()">⌫</div>
+    </div>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="screen">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-brand">CHAWKPRO</div>
+    <div class="top-bar-user" onclick="showLogoutConfirm()">
+      <span id="topBarName">Owner</span>
+      <span class="role-badge role-owner" id="topBarRole">OWNER</span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD TAB -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div id="shopNameBanner"></div>
+      <div id="lowStockAlerts"></div>
+
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-label">Today's Sales</div>
+          <div class="stat-value gold" id="todaySales">KES 0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Stock</div>
+          <div class="stat-value" id="totalStockVal">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Debt</div>
+          <div class="stat-value red" id="totalDebtVal">KES 0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Net Profit</div>
+          <div class="stat-value green" id="netProfitVal">KES 0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Sales vs Target</div>
+          <div class="period-toggle">
+            <button class="period-btn active" onclick="setPeriod('daily',this)">Day</button>
+            <button class="period-btn" onclick="setPeriod('weekly',this)">Week</button>
+            <button class="period-btn" onclick="setPeriod('monthly',this)">Month</button>
+          </div>
+        </div>
+        <div id="targetInfo" style="margin-bottom:10px;"></div>
+        <div class="progress-track">
+          <div class="progress-bar" id="targetProgress" style="width:0%"></div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" id="ownerTarget">
+        <div class="card-header">
+          <div class="card-title">Set Target</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount (KES)</label>
+            <input type="number" class="form-input" id="targetAmount" placeholder="e.g. 50000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Period</label>
+            <select class="form-input" id="targetPeriod">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-gold btn-full" onclick="saveTarget()">Save Target</button>
+      </div>
+    </div>
+
+    <!-- STOCK TAB -->
+    <div id="tab-stock" class="tab-content">
+      <div class="section-header">
+        <div class="section-title">STOCK</div>
+        <button class="btn btn-gold btn-sm" id="addStockBtn" onclick="openStockModal()">+ Add Item</button>
+      </div>
+      <div id="stockList"></div>
+    </div>
+
+    <!-- SALES TAB -->
+    <div id="tab-sales" class="tab-content">
+      <div class="section-header">
+        <div class="section-title">SALES</div>
+        <button class="btn btn-gold btn-sm" onclick="openSaleModal()">+ New Sale</button>
+      </div>
+      <div id="salesList"></div>
+    </div>
+
+    <!-- DEBTS TAB -->
+    <div id="tab-debts" class="tab-content">
+      <div class="section-header">
+        <div class="section-title">DEBTS</div>
+      </div>
+      <div id="debtList"></div>
+    </div>
+
+    <!-- SETTINGS TAB (owner only) -->
+    <div id="tab-settings" class="tab-content">
+      <div class="section-title" style="margin-bottom:16px;">SETTINGS</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Shop Details</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Shop Name</label>
+          <input type="text" class="form-input" id="shopNameInput" placeholder="e.g. Chawk Sports Store" maxlength="40">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Shop Tagline (optional)</label>
+          <input type="text" class="form-input" id="shopTaglineInput" placeholder="e.g. Quality Jerseys & Sportswear" maxlength="60">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number (optional)</label>
+          <input type="tel" class="form-input" id="shopPhoneInput" placeholder="07xxxxxxxx">
+        </div>
+        <button class="btn btn-gold btn-full" onclick="saveShopDetails()">Save Shop Details</button>
+        <div id="shopSavedMsg" style="color:var(--green);font-size:13px;text-align:center;margin-top:10px;min-height:18px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Users & Access</div>
+          <button class="btn btn-gold btn-sm" onclick="openUserModal()">+ Add User</button>
+        </div>
+        <div id="userList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Data Backup</div>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Export all your data as a JSON file. Import it to restore on any device.</p>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-outline btn-full" onclick="exportData()">📤 Export Data</button>
+          <label class="btn btn-outline btn-full" style="cursor:pointer;">
+            📥 Import Data
+            <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">App Info</div></div>
+        <p style="font-size:13px;color:var(--muted);">CHAWKPRO TRACKER v1.0<br>Premium Sales Management</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showTab('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showTab('stock',this)">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M20 7H4C2.9 7 2 7.9 2 9v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z" stroke="#7a7a9a" stroke-width="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="#7a7a9a" stroke-width="2"/></svg>
+      Stock
+    </div>
+    <div class="nav-item" onclick="showTab('sales',this)">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#7a7a9a" stroke-width="2"/><path d="M2 17l10 5 10-5" stroke="#7a7a9a" stroke-width="2"/><path d="M2 12l10 5 10-5" stroke="#7a7a9a" stroke-width="2"/></svg>
+      Sales
+    </div>
+    <div class="nav-item" onclick="showTab('debts',this)">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#7a7a9a" stroke-width="2"/><path d="M12 8v4l3 3" stroke="#7a7a9a" stroke-width="2" stroke-linecap="round"/></svg>
+      Debts
+    </div>
+    <div class="nav-item" id="settingsNav" onclick="showTab('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#7a7a9a" stroke-width="2"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#7a7a9a" stroke-width="2" stroke-linecap="round"/></svg>
+      Settings
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- STOCK MODAL -->
+<div id="stockModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="stockModalTitle">ADD ITEM</div>
+    <input type="hidden" id="editStockId">
+    <div class="form-group">
+      <label class="form-label">Product Name</label>
+      <input type="text" class="form-input" id="stockName" placeholder="e.g. Arsenal Jersey">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-input" id="stockQty" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cost Price (KES)</label>
+        <input type="number" class="form-input" id="stockCost" placeholder="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Selling Price (KES)</label>
+        <input type="number" class="form-input" id="stockPrice" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Low Stock Alert</label>
+        <input type="number" class="form-input" id="stockAlert" placeholder="5" min="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (size, variant, etc.)</label>
+      <input type="text" class="form-input" id="stockNotes" placeholder="e.g. Size L, Player #10">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Item Icon / Emoji</label>
+      <input type="text" class="form-input" id="stockEmoji" placeholder="👕" maxlength="2">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Color Tag</label>
+      <div class="color-swatches" id="colorSwatches">
+        <div class="color-swatch selected" style="background:#e53935" data-color="#e53935" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#1e88e5" data-color="#1e88e5" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#43a047" data-color="#43a047" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#fb8c00" data-color="#fb8c00" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#8e24aa" data-color="#8e24aa" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#f5c518" data-color="#f5c518" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#00acc1" data-color="#00acc1" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#6d4c41" data-color="#6d4c41" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#546e7a" data-color="#546e7a" onclick="selectColor(this)"></div>
+        <div class="color-swatch" style="background:#f50057" data-color="#f50057" onclick="selectColor(this)"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('stockModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveStock()" style="flex:2;">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALE MODAL -->
+<div id="saleModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">NEW SALE</div>
+    <div class="form-group">
+      <label class="form-label">Select Product</label>
+      <select class="form-input" id="saleProduct" onchange="updateSalePrice()">
+        <option value="">-- Choose product --</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-input" id="saleQty" value="1" min="1" oninput="calcSaleTotal()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unit Price (KES)</label>
+        <input type="number" class="form-input" id="saleUnitPrice" placeholder="0" oninput="calcSaleTotal()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Total Amount</label>
+      <input type="number" class="form-input" id="saleTotalAmount" placeholder="0" readonly style="color:var(--gold);font-weight:700;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Payment Type</label>
+      <select class="form-input" id="saleType" onchange="toggleDebtFields()">
+        <option value="cash">💵 Cash — Full Payment</option>
+        <option value="debt">📋 Debt — Pay Later</option>
+        <option value="partial">💰 Partial — Part Now</option>
+      </select>
+    </div>
+    <div id="debtFields" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Customer Name</label>
+        <input type="text" class="form-input" id="debtCustomer" placeholder="Full name">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Amount Paid Now</label>
+          <input type="number" class="form-input" id="debtPaid" placeholder="0" oninput="calcDebtBalance()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Balance Owed</label>
+          <input type="number" class="form-input" id="debtBalance" placeholder="0" readonly style="color:var(--red);">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input type="date" class="form-input" id="debtDue">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone (for WhatsApp reminder)</label>
+        <input type="tel" class="form-input" id="debtPhone" placeholder="07xxxxxxxx">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input type="text" class="form-input" id="saleNotes" placeholder="Optional notes">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('saleModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveSale()" style="flex:2;">Record Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ADD PAYMENT</div>
+    <input type="hidden" id="payDebtId">
+    <div id="payDebtInfo" style="margin-bottom:16px;font-size:14px;color:var(--muted);"></div>
+    <div class="form-group">
+      <label class="form-label">Amount Received (KES)</label>
+      <input type="number" class="form-input" id="payAmount" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Payment Date</label>
+      <input type="date" class="form-input" id="payDate">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('paymentModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="recordPayment()" style="flex:2;">Save Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div id="userModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="userModalTitle">ADD USER</div>
+    <input type="hidden" id="editUserId">
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input type="text" class="form-input" id="userName" placeholder="e.g. James Mwangi">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-input" id="userRole">
+        <option value="staff">Staff (Sales Only)</option>
+        <option value="owner">Owner (Full Access)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">PIN (4–6 digits)</label>
+      <input type="password" inputmode="numeric" class="form-input" id="userPin" placeholder="Enter PIN">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('userModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveUser()" style="flex:2;">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- BACKUP REMINDER MODAL -->
+<div id="backupReminderModal" class="modal-overlay">
+  <div class="modal" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div style="font-size:48px;margin-bottom:12px;">💾</div>
+    <div class="modal-title" style="justify-content:center;display:block;">BACKUP REMINDER</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:6px;">It's been <strong id="daysSinceBackup" style="color:var(--gold);"></strong> since your last backup.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Export your data now to avoid losing sales, stock, and debt records.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-gold btn-full" onclick="exportFromReminder()">📤 Export Backup Now</button>
+      <button class="btn btn-outline btn-full" onclick="snoozeBackup()">Remind me in 3 days</button>
+      <button class="btn btn-outline btn-full" style="color:var(--muted);font-size:12px;" onclick="dismissBackup()">Skip for now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js replaced with inline canvas renderer -->
+<script>
+// ══════════════════════════════════════════
+// STATE & STORAGE
+// ══════════════════════════════════════════
+const STORAGE_KEY = 'chawkpro_v1';
+
+function defaultData() {
+  return {
+    users: [
+      { id: 'u1', name: 'Owner', role: 'owner', pin: '1234' }
+    ],
+    stock: [],
+    sales: [],
+    debts: [],
+    target: { amount: 0, period: 'monthly' },
+    selectedColor: '#e53935'
+  };
+}
+
+let DB = load();
+let currentUser = null;
+let pinBuffer = '';
+let currentPeriod = 'daily';
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return defaultData();
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+}
+
+// ══════════════════════════════════════════
+// SPLASH → LOGIN
+// ══════════════════════════════════════════
+setTimeout(() => {
+  showScreen('login');
+  populateLoginUsers();
+}, 2500);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════
+function populateLoginUsers() {
+  const sel = document.getElementById('loginUser');
+  sel.innerHTML = DB.users.map(u =>
+    `<option value="${u.id}">${u.name} (${u.role})</option>`
+  ).join('');
+}
+
+function updateLoginUser() {
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('loginError').textContent = '';
+}
+
+function pinPress(d) {
+  if (pinBuffer.length >= 6) return;
+  pinBuffer += d;
+  updatePinDots();
+  if (pinBuffer.length >= 4) {
+    setTimeout(tryLogin, 100);
+  }
+}
+
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('loginError').textContent = '';
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById('dot' + i);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+function tryLogin() {
+  const uid = document.getElementById('loginUser').value;
+  const user = DB.users.find(u => u.id === uid);
+  if (!user) return;
+
+  if (pinBuffer === user.pin) {
+    currentUser = user;
+    document.getElementById('loginError').textContent = '';
+    pinBuffer = '';
+    updatePinDots();
+    enterApp();
+  } else if (pinBuffer.length >= 6) {
+    document.getElementById('loginError').textContent = '✕ Wrong PIN. Try again.';
+    pinBuffer = '';
+    updatePinDots();
+  }
+}
+
+function enterApp() {
+  showScreen('app');
+  document.getElementById('topBarName').textContent = currentUser.name;
+  const roleEl = document.getElementById('topBarRole');
+  roleEl.textContent = currentUser.role.toUpperCase();
+  roleEl.className = 'role-badge role-' + currentUser.role;
+
+  // Hide owner-only elements for staff
+  const isOwner = currentUser.role === 'owner';
+  document.getElementById('settingsNav').style.display = isOwner ? '' : 'none';
+  document.getElementById('ownerTarget').style.display = isOwner ? '' : 'none';
+
+  showTab('dashboard', document.querySelector('.nav-item'));
+  renderAll();
+  checkBackupReminder();
+}
+
+function showLogoutConfirm() {
+  if (confirm('Log out of CHAWKPRO?')) {
+    currentUser = null;
+    pinBuffer = '';
+    updatePinDots();
+    showScreen('login');
+    populateLoginUsers();
+  }
+}
+
+// ══════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════
+function showTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (el) el.classList.add('active');
+
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'stock') renderStock();
+  if (tab === 'sales') renderSales();
+  if (tab === 'debts') renderDebts();
+  if (tab === 'settings') renderSettings();
+}
+
+// ══════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════
+function renderAll() {
+  renderDashboard();
+  renderStock();
+  renderSales();
+  renderDebts();
+  if (currentUser.role === 'owner') renderSettings();
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function renderDashboard() {
+  // Show shop name banner
+  const shopBanner = document.getElementById('shopNameBanner');
+  if (shopBanner) {
+    const shop = DB.shop || {};
+    if (shop.name) {
+      shopBanner.innerHTML = `
+        <div style="background:linear-gradient(135deg,rgba(245,197,24,0.1),rgba(245,197,24,0.05));
+          border:1px solid rgba(245,197,24,0.2);border-radius:var(--radius);
+          padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:28px;">🏪</div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:20px;color:var(--gold);letter-spacing:1px;">${shop.name}</div>
+            ${shop.tagline ? `<div style="font-size:12px;color:var(--muted);">${shop.tagline}</div>` : ''}
+            ${shop.phone ? `<div style="font-size:12px;color:var(--muted);">📞 ${shop.phone}</div>` : ''}
+          </div>
+        </div>`;
+    } else {
+      shopBanner.innerHTML = '';
+    }
+  }
+  const today = todayStr();
+  const todaySales = DB.sales.filter(s => s.date === today).reduce((a, s) => a + s.total, 0);
+  const totalStock = DB.stock.reduce((a, s) => a + s.qty, 0);
+  const totalDebt = DB.debts.reduce((a, d) => a + d.balance, 0);
+  const totalRevenue = DB.sales.reduce((a, s) => a + s.total, 0);
+  const totalCost = DB.sales.reduce((a, s) => a + (s.costAtSale || 0), 0);
+  const netProfit = totalRevenue - totalCost;
+
+  document.getElementById('todaySales').textContent = 'KES ' + fmt(todaySales);
+  document.getElementById('totalStockVal').textContent = totalStock;
+  document.getElementById('totalDebtVal').textContent = 'KES ' + fmt(totalDebt);
+  document.getElementById('netProfitVal').textContent = 'KES ' + fmt(netProfit);
+
+  renderLowStockAlerts();
+  renderTargetProgress();
+  renderChart();
+}
+
+function renderLowStockAlerts() {
+  const low = DB.stock.filter(s => s.qty > 0 && s.qty <= (s.alertQty || 5));
+  const out = DB.stock.filter(s => s.qty === 0);
+  let html = '';
+  out.forEach(s => html += `<div class="alert alert-red">⚠️ <b>${s.name}</b> is OUT OF STOCK</div>`);
+  low.forEach(s => html += `<div class="alert alert-gold">📉 <b>${s.name}</b> — only ${s.qty} left</div>`);
+  document.getElementById('lowStockAlerts').innerHTML = html;
+}
+
+function renderTargetProgress() {
+  const { amount, period } = DB.target;
+  if (!amount) {
+    document.getElementById('targetInfo').innerHTML = '<span style="font-size:13px;color:var(--muted);">No target set yet</span>';
+    document.getElementById('targetProgress').style.width = '0%';
+    return;
+  }
+  const sales = getSalesByPeriod(period);
+  const total = sales.reduce((a, s) => a + s.total, 0);
+  const pct = Math.min(100, Math.round((total / amount) * 100));
+  document.getElementById('targetInfo').innerHTML =
+    `<span style="font-size:13px;color:var(--muted);">KES ${fmt(total)} of KES ${fmt(amount)} (${pct}%) — ${period}</span>`;
+  document.getElementById('targetProgress').style.width = pct + '%';
+}
+
+function getSalesByPeriod(period) {
+  const now = new Date();
+  return DB.sales.filter(s => {
+    const d = new Date(s.date);
+    if (period === 'daily') return s.date === todayStr();
+    if (period === 'weekly') {
+      const diff = (now - d) / 86400000;
+      return diff <= 7;
+    }
+    if (period === 'monthly') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return true;
+  });
+}
+
+function setPeriod(p, el) {
+  currentPeriod = p;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderTargetProgress();
+  renderChart();
+}
+
+function renderChart() {
+  const canvas = document.getElementById('salesChart');
+  const ctx = canvas.getContext('2d');
+  const labels = [];
+  const data = [];
+
+  if (currentPeriod === 'daily') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      labels.push(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]);
+      data.push(DB.sales.filter(s => s.date === ds).reduce((a, s) => a + s.total, 0));
+    }
+  } else if (currentPeriod === 'weekly') {
+    for (let i = 3; i >= 0; i--) {
+      labels.push('Wk-' + (4-i));
+      const start = new Date(); start.setDate(start.getDate() - i*7 - 6);
+      const end = new Date(); end.setDate(end.getDate() - i*7);
+      data.push(DB.sales.filter(s => { const d=new Date(s.date); return d>=start&&d<=end; }).reduce((a,s)=>a+s.total,0));
+    }
+  } else {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(); d.setMonth(d.getMonth() - i);
+      labels.push(months[d.getMonth()]);
+      data.push(DB.sales.filter(s => { const sd=new Date(s.date); return sd.getMonth()===d.getMonth()&&sd.getFullYear()===d.getFullYear(); }).reduce((a,s)=>a+s.total,0));
+    }
+  }
+
+  // Inline canvas bar chart — no library needed
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 160 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '160px';
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width, H = 160;
+  const padL = 36, padR = 10, padT = 10, padB = 28;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = Math.max(...data, 1);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (chartH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    const val = maxVal - (maxVal / 4) * i;
+    ctx.fillStyle = '#7a7a9a';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(val >= 1000 ? (val/1000).toFixed(0)+'k' : val.toFixed(0), padL - 4, y + 3);
+  }
+
+  // Bars
+  const barW = Math.min(chartW / labels.length * 0.55, 32);
+  const gap = chartW / labels.length;
+  labels.forEach((label, i) => {
+    const barH = (data[i] / maxVal) * chartH;
+    const x = padL + gap * i + (gap - barW) / 2;
+    const y = padT + chartH - barH;
+
+    // Bar fill
+    const grad = ctx.createLinearGradient(0, y, 0, padT + chartH);
+    grad.addColorStop(0, 'rgba(245,197,24,0.8)');
+    grad.addColorStop(1, 'rgba(245,197,24,0.15)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, barH, 4);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = '#7a7a9a';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x + barW/2, H - 8);
+  });
+}
+
+function saveTarget() {
+  const amt = parseFloat(document.getElementById('targetAmount').value);
+  const period = document.getElementById('targetPeriod').value;
+  if (!amt || amt <= 0) { showToast('Enter a valid target amount', 'error'); return; }
+  DB.target = { amount: amt, period };
+  save();
+  renderDashboard();
+  showToast('Target saved!', 'success');
+}
+
+// ══════════════════════════════════════════
+// STOCK
+// ══════════════════════════════════════════
+let selectedColor = '#e53935';
+
+function openStockModal(id) {
+  document.getElementById('editStockId').value = id || '';
+  if (id) {
+    const item = DB.stock.find(s => s.id === id);
+    document.getElementById('stockModalTitle').textContent = 'EDIT ITEM';
+    document.getElementById('stockName').value = item.name;
+    document.getElementById('stockQty').value = item.qty;
+    document.getElementById('stockCost').value = item.cost;
+    document.getElementById('stockPrice').value = item.price;
+    document.getElementById('stockAlert').value = item.alertQty || 5;
+    document.getElementById('stockNotes').value = item.notes || '';
+    document.getElementById('stockEmoji').value = item.emoji || '📦';
+    selectedColor = item.color || '#e53935';
+  } else {
+    document.getElementById('stockModalTitle').textContent = 'ADD ITEM';
+    document.getElementById('stockName').value = '';
+    document.getElementById('stockQty').value = '';
+    document.getElementById('stockCost').value = '';
+    document.getElementById('stockPrice').value = '';
+    document.getElementById('stockAlert').value = '5';
+    document.getElementById('stockNotes').value = '';
+    document.getElementById('stockEmoji').value = '📦';
+    selectedColor = '#e53935';
+  }
+  document.querySelectorAll('.color-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.color === selectedColor);
+  });
+  openModal('stockModal');
+}
+
+function selectColor(el) {
+  selectedColor = el.dataset.color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveStock() {
+  const name = document.getElementById('stockName').value.trim();
+  const qty = parseInt(document.getElementById('stockQty').value) || 0;
+  const cost = parseFloat(document.getElementById('stockCost').value) || 0;
+  const price = parseFloat(document.getElementById('stockPrice').value) || 0;
+  const alertQty = parseInt(document.getElementById('stockAlert').value) || 5;
+  const notes = document.getElementById('stockNotes').value.trim();
+  const emoji = document.getElementById('stockEmoji').value || '📦';
+  const editId = document.getElementById('editStockId').value;
+
+  if (!name) { showToast('Product name required', 'error'); return; }
+  if (price <= 0) { showToast('Set a selling price', 'error'); return; }
+
+  if (editId) {
+    const idx = DB.stock.findIndex(s => s.id === editId);
+    DB.stock[idx] = { ...DB.stock[idx], name, qty, cost, price, alertQty, notes, emoji, color: selectedColor };
+  } else {
+    DB.stock.push({ id: uid(), name, qty, cost, price, alertQty, notes, emoji, color: selectedColor, createdAt: todayStr() });
+  }
+  save();
+  closeModal('stockModal');
+  renderStock();
+  renderDashboard();
+  showToast(editId ? 'Item updated' : 'Item added!', 'success');
+}
+
+function deleteStock(id) {
+  if (!confirm('Delete this item?')) return;
+  DB.stock = DB.stock.filter(s => s.id !== id);
+  save();
+  renderStock();
+  renderDashboard();
+  showToast('Item deleted', 'info');
+}
+
+function renderStock() {
+  const el = document.getElementById('stockList');
+  if (!DB.stock.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>No stock items yet.<br>Tap + Add Item to start.</p></div>`;
+    return;
+  }
+
+  const isOwner = currentUser.role === 'owner';
+  el.innerHTML = DB.stock.map(item => {
+    const stockClass = item.qty === 0 ? 'low-stock' : item.qty <= (item.alertQty || 5) ? 'low-stock' : 'ok-stock';
+    return `
+    <div class="card" style="padding:14px;">
+      <div class="item-row" style="padding:0;border:none;">
+        <div class="item-color" style="background:${item.color || '#555'}">${item.emoji || '📦'}</div>
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-meta">KES ${fmt(item.price)} · Cost ${fmt(item.cost)}${item.notes ? ' · ' + item.notes : ''}</div>
+        </div>
+        <div class="item-stock">
+          <div class="stock-num ${stockClass}">${item.qty}</div>
+          <div style="font-size:10px;color:var(--muted);">units</div>
+        </div>
+      </div>
+      ${isOwner ? `<div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-outline btn-sm btn-full" onclick="openStockModal('${item.id}')">✏️ Edit</button>
+        <button class="btn btn-red btn-sm" onclick="deleteStock('${item.id}')">🗑</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// SALES
+// ══════════════════════════════════════════
+function openSaleModal() {
+  const sel = document.getElementById('saleProduct');
+  sel.innerHTML = '<option value="">-- Choose product --</option>' +
+    DB.stock.filter(s => s.qty > 0).map(s =>
+      `<option value="${s.id}">${s.name} (${s.qty} left) — KES ${fmt(s.price)}</option>`
+    ).join('');
+  document.getElementById('saleQty').value = 1;
+  document.getElementById('saleUnitPrice').value = '';
+  document.getElementById('saleTotalAmount').value = '';
+  document.getElementById('saleType').value = 'cash';
+  document.getElementById('saleNotes').value = '';
+  document.getElementById('debtFields').style.display = 'none';
+  document.getElementById('debtCustomer').value = '';
+  document.getElementById('debtPaid').value = '';
+  document.getElementById('debtBalance').value = '';
+  document.getElementById('debtPhone').value = '';
+  const t = new Date(); t.setDate(t.getDate() + 7);
+  document.getElementById('debtDue').value = t.toISOString().split('T')[0];
+  openModal('saleModal');
+}
+
+function updateSalePrice() {
+  const id = document.getElementById('saleProduct').value;
+  const item = DB.stock.find(s => s.id === id);
+  if (item) document.getElementById('saleUnitPrice').value = item.price;
+  calcSaleTotal();
+}
+
+function calcSaleTotal() {
+  const qty = parseFloat(document.getElementById('saleQty').value) || 0;
+  const unit = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
+  document.getElementById('saleTotalAmount').value = (qty * unit).toFixed(0);
+  calcDebtBalance();
+}
+
+function toggleDebtFields() {
+  const type = document.getElementById('saleType').value;
+  document.getElementById('debtFields').style.display = type !== 'cash' ? 'block' : 'none';
+  if (type === 'debt') {
+    document.getElementById('debtPaid').value = '0';
+    calcDebtBalance();
+  }
+  if (type === 'cash') {
+    const total = document.getElementById('saleTotalAmount').value;
+    document.getElementById('debtPaid').value = total;
+  }
+}
+
+function calcDebtBalance() {
+  const total = parseFloat(document.getElementById('saleTotalAmount').value) || 0;
+  const paid = parseFloat(document.getElementById('debtPaid').value) || 0;
+  document.getElementById('debtBalance').value = Math.max(0, total - paid).toFixed(0);
+}
+
+function saveSale() {
+  const productId = document.getElementById('saleProduct').value;
+  const qty = parseInt(document.getElementById('saleQty').value) || 0;
+  const unit = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
+  const total = parseFloat(document.getElementById('saleTotalAmount').value) || 0;
+  const type = document.getElementById('saleType').value;
+  const notes = document.getElementById('saleNotes').value.trim();
+
+  if (!productId) { showToast('Select a product', 'error'); return; }
+  if (qty <= 0) { showToast('Enter valid quantity', 'error'); return; }
+  if (total <= 0) { showToast('Enter a price', 'error'); return; }
+
+  const item = DB.stock.find(s => s.id === productId);
+  if (!item) { showToast('Product not found', 'error'); return; }
+  if (item.qty < qty) { showToast(`Only ${item.qty} in stock!`, 'error'); return; }
+
+  const saleId = uid();
+  const sale = {
+    id: saleId,
+    productId, productName: item.name,
+    qty, unit, total,
+    type, notes,
+    date: todayStr(),
+    time: new Date().toLocaleTimeString(),
+    costAtSale: item.cost * qty,
+    staffId: currentUser.id, staffName: currentUser.name
+  };
+
+  // Handle debt
+  if (type !== 'cash') {
+    const customer = document.getElementById('debtCustomer').value.trim();
+    const paid = parseFloat(document.getElementById('debtPaid').value) || 0;
+    const balance = parseFloat(document.getElementById('debtBalance').value) || 0;
+    const due = document.getElementById('debtDue').value;
+    const phone = document.getElementById('debtPhone').value.trim();
+
+    if (!customer) { showToast('Customer name required for debt', 'error'); return; }
+    if (balance > 0) {
+      DB.debts.push({
+        id: uid(), saleId,
+        customer, phone, due,
+        total, paid, balance,
+        date: todayStr(),
+        installments: paid > 0 ? [{ id: uid(), amount: paid, date: todayStr(), note: 'Initial payment' }] : []
+      });
+    }
+  }
+
+  // Deduct stock
+  item.qty -= qty;
+  DB.sales.push(sale);
+  save();
+  closeModal('saleModal');
+  renderAll();
+  showToast('Sale recorded! ✓', 'success');
+}
+
+function renderSales() {
+  const el = document.getElementById('salesList');
+  if (!DB.sales.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💰</div><p>No sales recorded yet.</p></div>`;
+    return;
+  }
+  const sorted = [...DB.sales].reverse();
+  el.innerHTML = sorted.map(s => `
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div>
+          <div style="font-weight:700;font-size:15px;">${s.productName}</div>
+          <div style="font-size:12px;color:var(--muted);">${s.date} · ${s.staffName} · ×${s.qty}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-display);font-size:20px;color:var(--gold);">KES ${fmt(s.total)}</div>
+          <span class="badge badge-${s.type}">${s.type}</span>
+        </div>
+      </div>
+      ${s.notes ? `<div style="font-size:12px;color:var(--muted);">${s.notes}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// DEBTS
+// ══════════════════════════════════════════
+function renderDebts() {
+  const el = document.getElementById('debtList');
+  const active = DB.debts.filter(d => d.balance > 0);
+  const cleared = DB.debts.filter(d => d.balance <= 0);
+
+  if (!DB.debts.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>No debts — all clear!</p></div>`;
+    return;
+  }
+
+  let html = '';
+  if (active.length) {
+    html += `<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">OUTSTANDING (${active.length})</div>`;
+    html += active.map(d => debtCard(d)).join('');
+  }
+  if (cleared.length) {
+    html += `<div style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;">CLEARED (${cleared.length})</div>`;
+    html += cleared.map(d => debtCard(d, true)).join('');
+  }
+  el.innerHTML = html;
+}
+
+function debtCard(d, cleared = false) {
+  const pct = Math.min(100, Math.round(((d.total - d.balance) / d.total) * 100));
+  const overdue = d.balance > 0 && d.due && d.due < todayStr();
+
+  return `
+  <div class="debt-card" style="${overdue ? 'border-color:rgba(255,71,87,.4)' : ''}">
+    <div class="debt-top">
+      <div>
+        <div class="debt-name">${d.customer}</div>
+        <div class="debt-date">📅 Due: ${d.due || 'No date'} ${overdue ? '<span style="color:var(--red);">OVERDUE</span>' : ''}</div>
+      </div>
+      <span class="badge ${cleared ? 'badge-cash' : 'badge-debt'}">${cleared ? 'CLEARED' : 'OWING'}</span>
+    </div>
+    <div class="debt-amounts">
+      <div class="debt-item">
+        <div class="debt-item-label">Total</div>
+        <div class="debt-item-val">KES ${fmt(d.total)}</div>
+      </div>
+      <div class="debt-item">
+        <div class="debt-item-label">Paid</div>
+        <div class="debt-item-val" style="color:var(--green);">KES ${fmt(d.total - d.balance)}</div>
+      </div>
+      <div class="debt-item">
+        <div class="debt-item-label">Balance</div>
+        <div class="debt-item-val" style="color:var(--red);">KES ${fmt(d.balance)}</div>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${pct}% paid</div>
+    ${d.installments && d.installments.length > 1 ? `
+      <div class="installment-list">
+        ${d.installments.map(i => `
+          <div class="inst-row">
+            <span style="color:var(--muted);">${i.date}</span>
+            <span style="color:var(--green);">+KES ${fmt(i.amount)}</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      ${d.balance > 0 ? `<button class="btn btn-green btn-sm" onclick="openPaymentModal('${d.id}')">+ Record Payment</button>` : ''}
+      ${d.phone ? `<div class="whatsapp-btn" onclick="sendWhatsApp('${d.id}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp Reminder
+      </div>` : ''}
+    </div>
+  </div>`;
+}
+
+function openPaymentModal(debtId) {
+  const d = DB.debts.find(x => x.id === debtId);
+  document.getElementById('payDebtId').value = debtId;
+  document.getElementById('payDebtInfo').innerHTML =
+    `<b>${d.customer}</b> — Balance: <span style="color:var(--red);">KES ${fmt(d.balance)}</span>`;
+  document.getElementById('payAmount').value = '';
+  document.getElementById('payDate').value = todayStr();
+  openModal('paymentModal');
+}
+
+function recordPayment() {
+  const id = document.getElementById('payDebtId').value;
+  const amount = parseFloat(document.getElementById('payAmount').value) || 0;
+  const date = document.getElementById('payDate').value;
+
+  if (!amount || amount <= 0) { showToast('Enter payment amount', 'error'); return; }
+
+  const debt = DB.debts.find(d => d.id === id);
+  if (!debt) return;
+
+  if (amount > debt.balance) { showToast(`Max payment is KES ${fmt(debt.balance)}`, 'error'); return; }
+
+  debt.installments = debt.installments || [];
+  debt.installments.push({ id: uid(), amount, date, note: 'Payment' });
+  debt.balance = Math.max(0, debt.balance - amount);
+
+  save();
+  closeModal('paymentModal');
+  renderDebts();
+  renderDashboard();
+  showToast(`Payment of KES ${fmt(amount)} recorded`, 'success');
+}
+
+function sendWhatsApp(debtId) {
+  const d = DB.debts.find(x => x.id === debtId);
+  const msg = encodeURIComponent(
+    `Hello ${d.customer}, this is a reminder from CHAWKPRO.\n\n` +
+    `Your balance of *KES ${fmt(d.balance)}* is due on ${d.due || 'soon'}.\n\n` +
+    `Please arrange payment. Thank you! 🙏`
+  );
+  const phone = d.phone.replace(/^0/, '254').replace(/\s/g, '');
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+}
+
+// ══════════════════════════════════════════
+// SETTINGS / USERS
+// ══════════════════════════════════════════
+function renderSettings() {
+  renderUserList();
+  loadShopDetails();
+}
+
+function loadShopDetails() {
+  const shop = DB.shop || {};
+  document.getElementById('shopNameInput').value = shop.name || '';
+  document.getElementById('shopTaglineInput').value = shop.tagline || '';
+  document.getElementById('shopPhoneInput').value = shop.phone || '';
+  document.getElementById('shopSavedMsg').textContent = '';
+}
+
+function saveShopDetails() {
+  const name = document.getElementById('shopNameInput').value.trim();
+  const tagline = document.getElementById('shopTaglineInput').value.trim();
+  const phone = document.getElementById('shopPhoneInput').value.trim();
+
+  if (!name) { showToast('Enter a shop name', 'error'); return; }
+
+  DB.shop = { name, tagline, phone };
+  save();
+
+  // Update top bar if name set
+  document.getElementById('topBarName').textContent = currentUser.name;
+
+  document.getElementById('shopSavedMsg').textContent = '✓ Saved — ' + name;
+  showToast('Shop details saved!', 'success');
+}
+
+function renderUserList() {
+  const el = document.getElementById('userList');
+  el.innerHTML = DB.users.map(u => `
+    <div class="user-row">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="user-avatar">${u.name[0].toUpperCase()}</div>
+        <div>
+          <div style="font-weight:600;">${u.name}</div>
+          <span class="role-badge role-${u.role}">${u.role}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="openUserModal('${u.id}')">Edit</button>
+        ${DB.users.length > 1 && u.id !== currentUser.id ? `<button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">Del</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openUserModal(id) {
+  document.getElementById('editUserId').value = id || '';
+  if (id) {
+    const u = DB.users.find(x => x.id === id);
+    document.getElementById('userModalTitle').textContent = 'EDIT USER';
+    document.getElementById('userName').value = u.name;
+    document.getElementById('userRole').value = u.role;
+    document.getElementById('userPin').value = '';
+  } else {
+    document.getElementById('userModalTitle').textContent = 'ADD USER';
+    document.getElementById('userName').value = '';
+    document.getElementById('userRole').value = 'staff';
+    document.getElementById('userPin').value = '';
+  }
+  openModal('userModal');
+}
+
+function saveUser() {
+  const name = document.getElementById('userName').value.trim();
+  const role = document.getElementById('userRole').value;
+  const pin = document.getElementById('userPin').value.trim();
+  const editId = document.getElementById('editUserId').value;
+
+  if (!name) { showToast('Name required', 'error'); return; }
+  if (!editId && (!pin || pin.length < 4 || pin.length > 6)) { showToast('PIN must be 4–6 digits', 'error'); return; }
+  if (pin && (pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin))) { showToast('PIN must be 4–6 digits', 'error'); return; }
+
+  if (editId) {
+    const u = DB.users.find(x => x.id === editId);
+    u.name = name; u.role = role;
+    if (pin) u.pin = pin;
+  } else {
+    DB.users.push({ id: uid(), name, role, pin });
+  }
+  save();
+  closeModal('userModal');
+  renderSettings();
+  populateLoginUsers();
+  showToast(editId ? 'User updated' : 'User added!', 'success');
+}
+
+function deleteUser(id) {
+  if (!confirm('Remove this user?')) return;
+  DB.users = DB.users.filter(u => u.id !== id);
+  save();
+  renderSettings();
+  populateLoginUsers();
+  showToast('User removed', 'info');
+}
+
+// ══════════════════════════════════════════
+// BACKUP
+// ══════════════════════════════════════════
+function exportData() {
+  const data = JSON.stringify(DB, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `chawkpro-backup-${todayStr()}.json`;
+  a.click();
+  showToast('Backup exported!', 'success');
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.users || !imported.stock || !imported.sales) {
+        showToast('Invalid backup file', 'error');
+        return;
+      }
+      if (!confirm('This will REPLACE all current data. Continue?')) return;
+      DB = imported;
+      save();
+      renderAll();
+      showToast('Data restored!', 'success');
+    } catch {
+      showToast('Invalid file format', 'error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) o.classList.remove('open');
+  });
+});
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function uid() { return Math.random().toString(36).substr(2, 9); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function fmt(n) {
+  if (!n && n !== 0) return '0';
+  return Number(n).toLocaleString('en-KE', { maximumFractionDigits: 0 });
+}
+
+// ══════════════════════════════════════════
+// BACKUP REMINDER
+// ══════════════════════════════════════════
+const BACKUP_KEY = 'chawkpro_backup_date';
+const SNOOZE_KEY = 'chawkpro_backup_snooze';
+
+function checkBackupReminder() {
+  // Only show to owner
+  if (!currentUser || currentUser.role !== 'owner') return;
+
+  const snoozeUntil = localStorage.getItem(SNOOZE_KEY);
+  if (snoozeUntil && snoozeUntil >= todayStr()) return;
+
+  const lastBackup = localStorage.getItem(BACKUP_KEY);
+  if (!lastBackup) {
+    // First time — set today, no reminder yet
+    localStorage.setItem(BACKUP_KEY, todayStr());
+    return;
+  }
+
+  const last = new Date(lastBackup);
+  const now = new Date();
+  const diffDays = Math.floor((now - last) / 86400000);
+
+  if (diffDays >= 7) {
+    document.getElementById('daysSinceBackup').textContent =
+      diffDays === 1 ? '1 day' : diffDays + ' days';
+    setTimeout(() => openModal('backupReminderModal'), 1000);
+  }
+}
+
+function exportFromReminder() {
+  localStorage.setItem(BACKUP_KEY, todayStr());
+  localStorage.removeItem(SNOOZE_KEY);
+  closeModal('backupReminderModal');
+  exportData();
+}
+
+function snoozeBackup() {
+  const snoozeDate = new Date();
+  snoozeDate.setDate(snoozeDate.getDate() + 3);
+  localStorage.setItem(SNOOZE_KEY, snoozeDate.toISOString().split('T')[0]);
+  closeModal('backupReminderModal');
+  showToast('Reminder snoozed for 3 days', 'info');
+}
+
+function dismissBackup() {
+  // Reset the 7-day clock from today
+  localStorage.setItem(BACKUP_KEY, todayStr());
+  localStorage.removeItem(SNOOZE_KEY);
+  closeModal('backupReminderModal');
+}
+
+// Patch exportData to record last backup date
+const _origExport = exportData;
+exportData = function() {
+  localStorage.setItem(BACKUP_KEY, todayStr());
+  localStorage.removeItem(SNOOZE_KEY);
+  _origExport();
+};
+
+
+// ══════════════════════════════════════════
+// PWA CORE — MANIFEST + SERVICE WORKER
+// ══════════════════════════════════════════
+
+// Manifest loaded via <link> tag in <head>
+
+// ══════════════════════════════════════════
+// PWA — SERVICE WORKER (external sw.js)
+// ══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => { console.log('[CHAWKPRO] SW ready'); reg.update(); })
+      .catch(err => console.log('[CHAWKPRO] SW error:', err));
+  });
+}
+
+
+// ══════════════════════════════════════════
+// PWA — INSTALL PROMPT
+// ══════════════════════════════════════════
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+window.addEventListener('appinstalled', () => {
+  hideInstallBanner();
+  showToast('CHAWKPRO installed! ✓', 'success');
+});
+
+function showInstallBanner() {
+  const existing = document.getElementById('installBanner');
+  if (existing) return;
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = `
+    position:fixed;bottom:80px;left:12px;right:12px;
+    background:linear-gradient(135deg,#1a1a26,#12121a);
+    border:1px solid #f5c518;border-radius:14px;
+    padding:14px 16px;display:flex;align-items:center;gap:12px;
+    z-index:999;box-shadow:0 8px 32px rgba(245,197,24,0.2);
+    animation:slideUp .4s cubic-bezier(0.175,0.885,0.32,1.275);
+  `;
+  banner.innerHTML = `
+    <div style="font-size:28px;">📲</div>
+    <div style="flex:1;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#f5c518;letter-spacing:1px;">INSTALL APP</div>
+      <div style="font-size:12px;color:#7a7a9a;">Add CHAWKPRO to your homescreen</div>
+    </div>
+    <button onclick="triggerInstall()" style="
+      background:#f5c518;color:#000;border:none;border-radius:8px;
+      padding:9px 16px;font-family:'DM Sans',sans-serif;font-weight:700;
+      font-size:13px;cursor:pointer;">Install</button>
+    <button onclick="hideInstallBanner()" style="
+      background:transparent;border:none;color:#7a7a9a;font-size:20px;cursor:pointer;padding:4px;">✕</button>
+  `;
+  document.body.appendChild(banner);
+}
+
+function hideInstallBanner() {
+  const b = document.getElementById('installBanner');
+  if (b) b.remove();
+}
+
+function triggerInstall() {
+  if (!deferredInstallPrompt) {
+    showToast('Open this page in Chrome to install', 'info');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(r => {
+    if (r.outcome === 'accepted') showToast('Installing CHAWKPRO...', 'success');
+    deferredInstallPrompt = null;
+    hideInstallBanner();
+  });
+}
+
+// Show manual install hint if already on HTTPS but no prompt fired after 4s
+setTimeout(() => {
+  const isHttps = location.protocol === 'https:';
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+  const hasPrompt = !!deferredInstallPrompt;
+  if (isHttps && !isInstalled && !hasPrompt && currentUser) {
+    showInstallBanner();
+  }
+}, 4000);
+</script>
+</body>
+</html>

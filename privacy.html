@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy – CHAWKPRO TRACKER</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #1e1e2e;
+      --accent: #6c63ff;
+      --accent2: #00d4aa;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 40px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--accent2);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta span {
+      color: var(--accent2);
+    }
+
+    .summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent2);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .summary-box strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    p {
+      font-size: 15px;
+      color: #a0a0bc;
+      line-height: 1.9;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--accent2);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .contact-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-top: 16px;
+    }
+
+    .contact-box a {
+      color: var(--accent2);
+      text-decoration: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      position: relative;
+      z-index: 1;
+      font-family: 'Space Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <header>
+    <div class="logo-mark">CK</div>
+    <div>
+      <div class="logo-text">CHAWKPRO</div>
+      <div class="logo-sub">TRACKER · PREMIUM EDITION</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-title">Legal</div>
+    <h1>Privacy Policy</h1>
+    <div class="meta">
+      App: <span>CHAWKPRO TRACKER v1.0</span> &nbsp;·&nbsp; Last updated: <span>April 2026</span>
+    </div>
+
+    <div class="summary-box">
+      <strong>TL;DR</strong>
+      CHAWKPRO TRACKER stores all your data locally on your device only. We collect nothing, transmit nothing, and share nothing. Your business data is entirely yours.
+    </div>
+
+    <section>
+      <h2>1. Data Collection</h2>
+      <p>CHAWKPRO TRACKER does not collect, transmit, or share any personal data. All information you enter — including sales records, stock items, debt records, and user PINs — is stored exclusively on your device using your browser's local storage and IndexedDB. No data ever leaves your device.</p>
+    </section>
+
+    <section>
+      <h2>2. No Internet Required</h2>
+      <p>The app is designed to function fully offline. No data is sent to any server, cloud service, database, or third party at any time, whether you are online or offline.</p>
+    </section>
+
+    <section>
+      <h2>3. No Analytics or Tracking</h2>
+      <p>We do not use analytics tools, advertising SDKs, cookies, tracking pixels, fingerprinting, or any form of user monitoring. We have no visibility into how you use the app.</p>
+    </section>
+
+    <section>
+      <h2>4. Permissions Used</h2>
+      <p>The app does not request access to your camera, microphone, contacts, location, SMS, or any sensitive device permissions.</p>
+      <div class="badge-row">
+        <span class="badge">✓ No Camera</span>
+        <span class="badge">✓ No Location</span>
+        <span class="badge">✓ No Contacts</span>
+        <span class="badge">✓ No Microphone</span>
+        <span class="badge">✓ No SMS Access</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Data Export & Backup</h2>
+      <p>The app includes an export feature that saves your data as a JSON file directly to your device. This file is under your full control and is never uploaded to any server. You may import this file to restore data on any device.</p>
+    </section>
+
+    <section>
+      <h2>6. Third-Party Services</h2>
+      <p>CHAWKPRO TRACKER does not integrate with any third-party services, APIs, payment processors, or external platforms. The app is entirely self-contained.</p>
+    </section>
+
+    <section>
+      <h2>7. Children's Privacy</h2>
+      <p>This app is intended for business use by adults. It is not directed at children under the age of 13, and we do not knowingly collect any information from children.</p>
+    </section>
+
+    <section>
+      <h2>8. Changes to This Policy</h2>
+      <p>If we update this privacy policy, the new version will be published at this URL with an updated date. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
+    </section>
+
+    <section>
+      <h2>9. Contact</h2>
+      <p>For questions or concerns about this privacy policy, contact us:</p>
+      <div class="contact-box">
+        <a href="mailto:chawkpro@gmail.com">chawkpro@gmail.com</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2026 CHAWKPRO TRACKER · All Rights Reserved · v1.0
+  </footer>
+</body>
+</html>
