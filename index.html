@@ -1053,7 +1053,14 @@ function save() {
 // ══════════════════════════════════════════
 // SPLASH → LOGIN
 // ══════════════════════════════════════════
+// Initialize Firebase as soon as possible
+window.addEventListener('load', function() {
+  if (typeof firebase !== 'undefined') initFirebase();
+});
+
 setTimeout(() => {
+  // Ensure Firebase initialized
+  if (typeof firebase !== 'undefined' && (!_auth || !_db)) initFirebase();
   // Check for cloud session first
   try {
     const session = loadCloudSession();

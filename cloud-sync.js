@@ -23,9 +23,6 @@ function initFirebase() {
   }
 }
 
-// Auto-init Firebase when script loads
-if (typeof firebase !== "undefined") { initFirebase(); } else { window.addEventListener("load", initFirebase); }
-
 // ── SYNC STATUS ───────────────────────────────────────
 function updateSyncDot(status) {
   const el = document.getElementById('syncStatus');
@@ -133,6 +130,15 @@ async function handleRegister() {
     errEl.textContent = 'PIN must be 4–6 digits'; errEl.classList.add('show'); return;
   }
 
+  // Ensure Firebase is initialized
+  if (!_auth || !_db) {
+    const ok = initFirebase();
+    if (!ok || !_auth) {
+      errEl.textContent = 'Firebase not ready. Check internet and try again.';
+      errEl.classList.add('show'); return;
+    }
+  }
+
   showCloudLoader('Creating your shop...');
   try {
     const cred = await _auth.createUserWithEmailAndPassword(email, password);
@@ -170,6 +176,15 @@ async function handleCloudLogin() {
 
   if (!email || !password || !pin) {
     errEl.textContent = 'All fields required'; errEl.classList.add('show'); return;
+  }
+
+  // Ensure Firebase is initialized
+  if (!_auth || !_db) {
+    const ok = initFirebase();
+    if (!ok || !_auth) {
+      errEl.textContent = 'Firebase not ready. Check internet and try again.';
+      errEl.classList.add('show'); return;
+    }
   }
 
   showCloudLoader('Signing in...');
