@@ -667,6 +667,16 @@
           <div class="stat-label">Net Profit</div>
           <div class="stat-value green" id="netProfitVal">KES 0</div>
         </div>
+        <div class="stat-box">
+          <div class="stat-label">Stock Cost Value</div>
+          <div class="stat-value" id="stockCostVal" style="color:var(--blue);font-size:22px;">KES 0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">What you paid</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Stock Retail Value</div>
+          <div class="stat-value green" id="stockRetailVal" style="font-size:22px;">KES 0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">If all sold</div>
+        </div>
       </div>
 
       <div class="card">
@@ -1223,10 +1233,15 @@ function renderDashboard() {
   const totalCost = DB.sales.reduce((a, s) => a + (s.costAtSale || 0), 0);
   const netProfit = totalRevenue - totalCost;
 
+  const stockCostValue = DB.stock.reduce((a, s) => a + ((s.cost || 0) * (s.qty || 0)), 0);
+  const stockRetailValue = DB.stock.reduce((a, s) => a + ((s.price || 0) * (s.qty || 0)), 0);
+
   document.getElementById('todaySales').textContent = 'KES ' + fmt(todaySales);
-  document.getElementById('totalStockVal').textContent = totalStock;
+  document.getElementById('totalStockVal').textContent = totalStock + ' items';
   document.getElementById('totalDebtVal').textContent = 'KES ' + fmt(totalDebt);
   document.getElementById('netProfitVal').textContent = 'KES ' + fmt(netProfit);
+  document.getElementById('stockCostVal').textContent = 'KES ' + fmt(stockCostValue);
+  document.getElementById('stockRetailVal').textContent = 'KES ' + fmt(stockRetailValue);
 
   renderLowStockAlerts();
   renderTargetProgress();
