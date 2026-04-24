@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "io.github.kwachdavid123_beep.twa",
-    "sha256_cert_fingerprints": ["0B:92:C0:B6:22:0E:98:84:73:5C:50:1B:AE:90:96:5E:B7:3C:26:BC:03:E2:A5:EC:7A:C8:B0:78:EC:4C:8F:9B"]
+    "sha256_cert_fingerprints": ["3B:2A:F2:79:42:0A:73:71:D1:6C:92:08:AC:AC:7D:7B:C8:CC:62:7D:18:A9:35:EB:D1:5C:FC:E8:B3:D9:0E:F7"]
   }
 }]
