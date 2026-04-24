@@ -18,7 +18,7 @@ function initFirebase() {
     window.addEventListener('offline', () => updateSyncDot('offline'));
     updateSyncDot(navigator.onLine ? 'online' : 'offline');
     return true;
-  } catch (e) {
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code);
     console.warn('Firebase init failed:', e);
     return false;
   }
@@ -153,9 +153,9 @@ async function handleRegister() {
     hideCloudLoader();
     showToast('Shop created! Welcome 🎉', 'success');
     enterCloudApp('owner', shopName);
-  } catch (e) {
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code);
     hideCloudLoader();
-    errEl.textContent = fbErr(e.code) + (e.code ? " ["+e.code+"]" : ""); errEl.classList.add("show");
+    errEl.textContent = fbErr(e.code) + " [" + (e.code||"unknown") + "]"; errEl.classList.add("show"); alert("DEBUG: " + e.code + " | " + e.message);
   }
 }
 
@@ -230,9 +230,9 @@ async function handleCloudLogin() {
     await _auth.signOut(); hideCloudLoader();
     errEl.textContent = 'No shop account found for this email';
     errEl.classList.add('show');
-  } catch (e) {
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code);
     hideCloudLoader();
-    errEl.textContent = fbErr(e.code) + (e.code ? " ["+e.code+"]" : ""); errEl.classList.add("show");
+    errEl.textContent = fbErr(e.code) + " [" + (e.code||"unknown") + "]"; errEl.classList.add("show"); alert("DEBUG: " + e.code + " | " + e.message);
   }
 }
 
@@ -243,7 +243,7 @@ async function handleForgotPassword() {
   try {
     await _auth.sendPasswordResetEmail(email);
     showToast('Reset email sent! Check inbox', 'success');
-  } catch (e) { showToast('Email not found', 'error'); }
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code); showToast('Email not found', 'error'); }
 }
 
 // ── ENTER APP ─────────────────────────────────────────
@@ -283,7 +283,7 @@ async function loadCloudDataIntoApp() {
 
     save(); // persist to localStorage for offline
     renderAll();
-  } catch (e) {
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code);
     console.warn('loadCloudData offline, using cache:', e);
     renderAll();
   }
@@ -324,14 +324,14 @@ async function cloudSaveItem(item) {
     await _db.collection('shops').doc(_cloudShopId).collection('stock').doc(item.id).set({
       ...item, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch (e) { queueOp({ type: 'addItem', data: item }); }
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code); queueOp({ type: 'addItem', data: item }); }
 }
 
 async function cloudDeleteItem(id) {
   if (!_cloudShopId) return;
   try {
     await _db.collection('shops').doc(_cloudShopId).collection('stock').doc(id).delete();
-  } catch (e) { queueOp({ type: 'deleteItem', id }); }
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code); queueOp({ type: 'deleteItem', id }); }
 }
 
 async function cloudSaveSale(sale) {
@@ -346,7 +346,7 @@ async function cloudSaveSale(sale) {
         .update({ qty: firebase.firestore.FieldValue.increment(-(sale.qty || 1)),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
-  } catch (e) { queueOp({ type: 'addSale', data: sale }); }
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code); queueOp({ type: 'addSale', data: sale }); }
 }
 
 async function cloudSaveDebt(debt) {
@@ -355,7 +355,7 @@ async function cloudSaveDebt(debt) {
     await _db.collection('shops').doc(_cloudShopId).collection('debts').doc(debt.id).set({
       ...debt, createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch (e) { queueOp({ type: 'addDebt', data: debt }); }
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code); queueOp({ type: 'addDebt', data: debt }); }
 }
 
 // ── ADD STAFF ─────────────────────────────────────────
@@ -385,7 +385,7 @@ async function addCloudStaff(name, email, password, pin) {
     if (!DB.users) DB.users = [];
     DB.users.push({ id: staffUid, name, role: 'staff', pin: hashPin(pin) });
     save(); renderUsers();
-  } catch (e) {
+  } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code);
     hideCloudLoader(); showToast(fbErr(e.code), 'error');
   }
 }
@@ -407,7 +407,7 @@ async function processSyncQ() {
       else if (op.type === 'addItem')    await cloudSaveItem(op.data);
       else if (op.type === 'deleteItem') await cloudDeleteItem(op.id);
       else if (op.type === 'addDebt')    await cloudSaveDebt(op.data);
-    } catch (e) { _syncQ.push(op); }
+    } catch (e) { alert("DEBUG: " + e.message + " | CODE: " + e.code); _syncQ.push(op); }
   }
   localStorage.setItem('chawkpro_syncQ', JSON.stringify(_syncQ));
   updateSyncDot('online');
