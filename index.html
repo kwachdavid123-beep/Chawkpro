@@ -13,6 +13,11 @@
 <title>CHAWKPRO TRACKER</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="./firebase-config.js"></script>
+<script src="./cloud-sync.js"></script>
 <!-- fonts embedded via CSS stack -->
 <style>
   :root {
@@ -410,6 +415,77 @@
     display: flex; align-items: center; gap: 8px; font-size: 13px;
     color: #25D366; cursor: pointer; padding: 8px 0;
   }
+
+  /* ══ CLOUD AUTH STYLES ══ */
+  #cloudAuth {
+    align-items: center; justify-content: flex-start;
+    background: var(--bg); padding: 24px; overflow-y: auto;
+  }
+  .cloud-card { width: 100%; max-width: 400px; margin: 0 auto; animation: fadeUp .4s ease; }
+  .cloud-header { text-align: center; margin-bottom: 28px; padding-top: 20px; }
+  .cloud-header .brand-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 32px; margin: 0 auto 16px; box-shadow: 0 0 40px rgba(245,197,24,0.3);
+  }
+  .cloud-header h1 { font-family: var(--font-display); font-size: 36px; color: var(--gold); letter-spacing: 3px; }
+  .cloud-header p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .mode-toggle {
+    display: flex; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px; margin-bottom: 24px; gap: 4px;
+  }
+  .mode-btn {
+    flex: 1; padding: 10px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer; transition: all .2s; color: var(--muted); background: transparent;
+  }
+  .mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .auth-panel { display: none; }
+  .auth-panel.active { display: block; }
+  .auth-error {
+    color: var(--red); font-size: 13px; text-align: center; margin-top: 10px;
+    padding: 8px; background: rgba(255,71,87,0.08); border-radius: 8px; display: none;
+  }
+  .auth-error.show { display: block; }
+  .auth-switch { text-align: center; font-size: 13px; color: var(--muted); margin-top: 16px; padding-bottom: 20px; }
+  .auth-switch span { color: var(--gold); cursor: pointer; font-weight: 600; }
+  #trialBanner {
+    display: none; background: rgba(245,197,24,0.12); border-bottom: 1px solid rgba(245,197,24,0.3);
+    color: #f5c518; text-align: center; font-size: 12px; padding: 6px 16px; letter-spacing: 0.5px;
+  }
+  #syncStatus { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; margin-left: 4px; }
+  #subWallOverlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+    z-index: 9998; display: none; align-items: center; justify-content: center;
+    padding: 24px; backdrop-filter: blur(8px);
+  }
+  #subWallOverlay.open { display: flex; }
+  .sub-wall-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 24px; padding: 36px 28px; text-align: center; max-width: 360px; width: 100%;
+  }
+  .sub-price { font-family: var(--font-display); font-size: 42px; color: var(--green); margin-bottom: 4px; }
+  .sub-mpesa {
+    background: rgba(0,217,126,0.1); border: 1px solid rgba(0,217,126,0.3);
+    border-radius: 12px; padding: 16px; margin-bottom: 20px;
+    font-size: 13px; color: var(--green); line-height: 1.8; text-align: left;
+  }
+  #cloudLoaderOverlay {
+    position: fixed; inset: 0; background: rgba(10,10,15,0.88);
+    z-index: 9999; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; backdrop-filter: blur(4px);
+  }
+  #cloudLoaderOverlay.show { display: flex; }
+  .cloud-spinner {
+    width: 48px; height: 48px; border: 3px solid #2a2a3d;
+    border-top-color: #f5c518; border-radius: 50%; animation: cspin 0.8s linear infinite;
+  }
+  @keyframes cspin { to { transform: rotate(360deg); } }
+  .trial-info-box {
+    background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2);
+    border-radius: 12px; padding: 14px; margin-top: 16px; text-align: center; margin-bottom: 40px;
+  }
+
 </style>
 </head>
 <body>
@@ -422,6 +498,92 @@
     <div class="splash-sub">Tracker · Premium Edition</div>
     <div class="splash-loader"><div class="splash-loader-bar"></div></div>
   </div>
+</div>
+
+
+<!-- CLOUD AUTH SCREEN -->
+<div id="cloudAuth" class="screen">
+  <div class="cloud-card">
+    <div class="cloud-header">
+      <div class="brand-icon">📊</div>
+      <h1>CHAWKPRO</h1>
+      <p>CLOUD · PREMIUM EDITION</p>
+    </div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="switchAuthMode('login')">Sign In</button>
+      <button class="mode-btn" onclick="switchAuthMode('register')">Create Shop</button>
+    </div>
+    <!-- LOGIN -->
+    <div id="authLoginPanel" class="auth-panel active">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="cloudEmail" class="form-input" placeholder="your@email.com" autocomplete="email" inputmode="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="cloudPassword" class="form-input" placeholder="Password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">PIN</label>
+        <input type="password" id="cloudPin" class="form-input" placeholder="4–6 digit PIN" inputmode="numeric" maxlength="6">
+      </div>
+      <div class="auth-error" id="cloudLoginError"></div>
+      <button class="btn btn-gold btn-full" style="margin-top:8px;" onclick="handleCloudLogin()">Sign In →</button>
+      <div class="auth-switch">Forgot password? <span onclick="handleForgotPassword()">Reset via email</span></div>
+      <div class="auth-switch" style="margin-top:0">No shop? <span onclick="switchAuthMode('register')">Create one free</span></div>
+    </div>
+    <!-- REGISTER -->
+    <div id="authRegisterPanel" class="auth-panel">
+      <div class="form-group">
+        <label class="form-label">Shop Name</label>
+        <input type="text" id="regShopName" class="form-input" placeholder="e.g. Mama Njeri Store">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Email</label>
+        <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" autocomplete="email" inputmode="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="regPassword" class="form-input" placeholder="Min 6 characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">PIN (for daily login)</label>
+        <input type="password" id="regPin" class="form-input" placeholder="4–6 digits" inputmode="numeric" maxlength="6">
+      </div>
+      <div class="auth-error" id="registerError"></div>
+      <button class="btn btn-gold btn-full" style="margin-top:8px;" onclick="handleRegister()">Create My Shop →</button>
+      <div class="auth-switch">Already registered? <span onclick="switchAuthMode('login')">Sign in</span></div>
+      <div class="trial-info-box">
+        <div style="font-size:20px;margin-bottom:6px;">🎉</div>
+        <div style="color:var(--gold);font-weight:600;font-size:14px;">30 Days Free</div>
+        <div style="color:var(--muted);font-size:12px;margin-top:4px;">Then KSh 100/month. Cancel anytime.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION WALL -->
+<div id="subWallOverlay">
+  <div class="sub-wall-card">
+    <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+    <div style="font-family:var(--font-display);font-size:28px;color:var(--gold);margin-bottom:8px;">UPGRADE</div>
+    <div style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px;" id="subDaysLeft">Your free trial has ended.</div>
+    <div class="sub-price">KSh 100</div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:24px;">per month · cancel anytime</div>
+    <div class="sub-mpesa">
+      📱 <strong>Pay via M-PESA</strong><br>
+      Till/Paybill: <strong>[YOUR MPESA NUMBER]</strong><br>
+      Ref: CHAWKPRO + your email<br>
+      Send receipt to: chawkpro@gmail.com
+    </div>
+    <button class="btn btn-gold btn-full" onclick="document.getElementById('subWallOverlay').classList.remove('open');location.reload();">I've Paid — Refresh</button>
+  </div>
+</div>
+
+<!-- CLOUD LOADER -->
+<div id="cloudLoaderOverlay">
+  <div class="cloud-spinner"></div>
+  <div style="color:#f5c518;font-size:14px;letter-spacing:1px;" id="cloudLoaderMsg">Loading...</div>
 </div>
 
 <!-- LOGIN -->
@@ -476,8 +638,10 @@
       <span id="topBarName">Owner</span>
       <span class="role-badge role-owner" id="topBarRole">OWNER</span>
     </div>
+    <span id="syncStatus" style="color:#00d97e;font-size:10px;font-weight:600;">● Online</span>
   </div>
 
+  <div id="trialBanner"></div>
   <!-- CONTENT -->
   <div class="content">
 
@@ -890,8 +1054,19 @@ function save() {
 // SPLASH → LOGIN
 // ══════════════════════════════════════════
 setTimeout(() => {
-  showScreen('login');
-  populateLoginUsers();
+  // Check for cloud session first
+  try {
+    const session = loadCloudSession();
+    if (session && session.shopId) {
+      _cloudShopId = session.shopId;
+      _cloudRole   = session.role;
+      _cloudEmail  = session.email;
+      _cloudName   = session.name;
+      enterCloudApp(session.role, session.name);
+      return;
+    }
+  } catch(e) {}
+  showScreen('cloudAuth');
 }, 2500);
 
 function showScreen(id) {
@@ -1256,6 +1431,11 @@ function saveStock() {
   renderStock();
   renderDashboard();
   showToast(editId ? 'Item updated' : 'Item added!', 'success');
+  // Cloud sync
+  if (_cloudShopId) {
+    const item = editId ? DB.stock.find(s=>s.id===editId) : DB.stock[DB.stock.length-1];
+    if (item) cloudSaveItem(item);
+  }
 }
 
 function deleteStock(id) {
@@ -1265,6 +1445,7 @@ function deleteStock(id) {
   renderStock();
   renderDashboard();
   showToast('Item deleted', 'info');
+  if (_cloudShopId) cloudDeleteItem(id);
 }
 
 function renderStock() {
@@ -1393,13 +1574,15 @@ function saveSale() {
 
     if (!customer) { showToast('Customer name required for debt', 'error'); return; }
     if (balance > 0) {
-      DB.debts.push({
+      const newDebt = {
         id: uid(), saleId,
         customer, phone, due,
         total, paid, balance,
         date: todayStr(),
         installments: paid > 0 ? [{ id: uid(), amount: paid, date: todayStr(), note: 'Initial payment' }] : []
-      });
+      };
+      DB.debts.push(newDebt);
+      if (_cloudShopId) cloudSaveDebt(newDebt);
     }
   }
 
@@ -1410,6 +1593,7 @@ function saveSale() {
   closeModal('saleModal');
   renderAll();
   showToast('Sale recorded! ✓', 'success');
+  if (_cloudShopId) cloudSaveSale(sale);
 }
 
 function renderSales() {
@@ -1638,6 +1822,12 @@ function saveUser() {
     if (pin) u.pin = pin;
   } else {
     DB.users.push({ id: uid(), name, role, pin });
+    // If cloud is active, also create cloud staff account
+    if (_cloudShopId && role === 'staff') {
+      const tempPassword = 'Chawkpro' + pin + '!';
+      addCloudStaff(name, name.toLowerCase().replace(/\s/g,'') + '@chawkpro.local', tempPassword, pin)
+        .catch(() => {});
+    }
   }
   save();
   closeModal('userModal');
@@ -1870,6 +2060,31 @@ setTimeout(() => {
     showInstallBanner();
   }
 }, 4000);
+
+// ══ CLOUD APP ENTRY (called from cloud-sync.js) ══
+function enterCloudApp(role, name) {
+  // Restore DB from localStorage (offline cache) first
+  DB = load();
+  currentUser = { id: 'cloud_' + role, name: name, role: role };
+
+  showScreen('app');
+  document.getElementById('topBarName').textContent = name || role;
+  const rb = document.getElementById('topBarRole');
+  rb.textContent = role.toUpperCase();
+  rb.className = 'role-badge role-' + role;
+
+  const isOwner = role === 'owner';
+  document.getElementById('settingsNav').style.display = isOwner ? '' : 'none';
+  document.getElementById('ownerTarget').style.display = isOwner ? '' : 'none';
+
+  // Init Firebase and load cloud data
+  initFirebase();
+  loadCloudDataIntoApp();
+  startCloudListeners();
+  showTab('dashboard', document.querySelector('.nav-item'));
+  checkBackupReminder();
+}
+
 </script>
 </body>
 </html>
