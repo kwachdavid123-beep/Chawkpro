@@ -450,8 +450,7 @@
   .auth-switch { text-align: center; font-size: 13px; color: var(--muted); margin-top: 16px; padding-bottom: 20px; }
   .auth-switch span { color: var(--gold); cursor: pointer; font-weight: 600; }
   #trialBanner {
-    display: none; background: rgba(245,197,24,0.12); border-bottom: 1px solid rgba(245,197,24,0.3);
-    color: #f5c518; text-align: center; font-size: 12px; padding: 6px 16px; letter-spacing: 0.5px;
+    display: none;
   }
   #syncStatus { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; margin-left: 4px; }
   #subWallOverlay {
@@ -485,6 +484,25 @@
     background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2);
     border-radius: 12px; padding: 14px; margin-top: 16px; text-align: center; margin-bottom: 40px;
   }
+
+
+  /* ── FLOATING ADD SALE BUTTON ── */
+  .fab-sale {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 4px 20px rgba(245,197,24,0.5);
+    cursor: pointer;
+    z-index: 200;
+    border: none;
+    transition: transform .15s;
+  }
+  .fab-sale:active { transform: scale(0.92); }
 
 </style>
 </head>
@@ -634,9 +652,10 @@
   <!-- TOP BAR -->
   <div class="top-bar">
     <div class="top-bar-brand">CHAWKPRO</div>
-    <div class="top-bar-user" onclick="showLogoutConfirm()">
+    <div class="top-bar-user" onclick="showLogoutConfirm()" title="Tap to logout">
       <span id="topBarName">Owner</span>
       <span class="role-badge role-owner" id="topBarRole">OWNER</span>
+      <span style="font-size:14px;">⏻</span>
     </div>
     <span id="syncStatus" style="color:#00d97e;font-size:10px;font-weight:600;">● Online</span>
   </div>
@@ -791,15 +810,58 @@
         </div>
       </div>
 
+      <!-- SUBSCRIPTION CARD -->
+      <div class="card" id="subscriptionCard">
+        <div class="card-header">
+          <div class="card-title">Subscription</div>
+          <span id="subStatusBadge" class="badge badge-cash">ACTIVE</span>
+        </div>
+        <div id="subStatusDetails" style="font-size:13px;color:var(--muted);margin-bottom:14px;"></div>
+        <div id="mpesaPaySection" style="display:none;">
+          <div class="sub-mpesa" style="margin-bottom:12px;">
+            📱 <strong>Pay via M-PESA</strong><br>
+            Send KSh 100 to: <strong>0799878872</strong><br>
+            Ref: CHAWKPRO + your email
+          </div>
+          <div class="form-group">
+            <label class="form-label">M-PESA Transaction Code</label>
+            <input type="text" id="mpesaCodeInput" class="form-input" placeholder="e.g. QGH7K2ABCD" style="text-transform:uppercase;">
+          </div>
+          <button class="btn btn-gold btn-full" onclick="verifyMpesaPayment()">Verify & Unlock →</button>
+          <div id="mpesaVerifyMsg" style="font-size:13px;text-align:center;margin-top:10px;min-height:18px;"></div>
+        </div>
+        <div id="referralSection" style="margin-top:14px;">
+          <div class="card-title" style="margin-bottom:8px;">Referral Program</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Share your referral code. Both you and your friend get 1 free month!</p>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:var(--font-display);font-size:22px;color:var(--gold);letter-spacing:3px;" id="myReferralCode">------</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">Your referral code</div>
+          </div>
+          <button class="btn btn-outline btn-full" style="margin-top:10px;" onclick="shareReferralCode()">📤 Share My Code</button>
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label">Have a referral code?</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="referralInput" class="form-input" placeholder="Enter code" style="text-transform:uppercase;">
+              <button class="btn btn-gold" onclick="applyReferralCode()">Apply</button>
+            </div>
+          </div>
+          <div id="referralMsg" style="font-size:13px;text-align:center;margin-top:8px;min-height:18px;"></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header"><div class="card-title">App Info</div></div>
         <p style="font-size:13px;color:var(--muted);">CHAWKPRO TRACKER v1.0<br>Premium Sales Management</p>
+        <button class="btn btn-red btn-full" style="margin-top:14px;" onclick="showLogoutConfirm()">🚪 Log Out</button>
       </div>
     </div>
 
   </div>
 
   <!-- BOTTOM NAV -->
+  <!-- FLOATING ADD SALE BUTTON -->
+  <button class="fab-sale" onclick="openModal('saleModal')" title="Add Sale">＋</button>
+
   <div class="bottom-nav">
     <div class="nav-item active" onclick="showTab('dashboard',this)">
       <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#7a7a9a" stroke-width="2"/></svg>
@@ -1707,6 +1769,7 @@ function debtCard(d, cleared = false) {
       </div>` : ''}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       ${d.balance > 0 ? `<button class="btn btn-green btn-sm" onclick="openPaymentModal('${d.id}')">+ Record Payment</button>` : ''}
+      <button class="btn btn-outline btn-sm" onclick="editDebtor('${d.id}')">✏️ Edit</button>
       ${d.phone ? `<div class="whatsapp-btn" onclick="sendWhatsApp('${d.id}')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp Reminder
@@ -2106,6 +2169,241 @@ function enterCloudApp(role, name) {
   showTab('dashboard', document.querySelector('.nav-item'));
   checkBackupReminder();
 }
+
+
+// ══ EDIT DEBTOR ══
+function editDebtor(id) {
+  const d = DB.debts.find(x => x.id === id);
+  if (!d) return;
+  const newName = prompt('Customer name:', d.customer);
+  if (newName === null) return;
+  const newPhone = prompt('Phone number:', d.phone || '');
+  if (newPhone === null) return;
+  const newDue = prompt('Due date (YYYY-MM-DD):', d.due || '');
+  if (newDue === null) return;
+  d.customer = newName.trim() || d.customer;
+  d.phone = newPhone.trim();
+  d.due = newDue.trim();
+  save();
+  if (_cloudShopId) cloudSaveDebt(d);
+  renderDebts();
+  showToast('Debtor updated ✓', 'success');
+}
+
+// ══ SUBSCRIPTION STATUS IN SETTINGS ══
+function renderSubscriptionCard() {
+  if (!_cloudShopId) return;
+  _db.collection('shops').doc(_cloudShopId).get().then(doc => {
+    if (!doc.exists) return;
+    const shop = doc.data();
+    const trial = checkTrial(shop);
+    const badge = document.getElementById('subStatusBadge');
+    const details = document.getElementById('subStatusDetails');
+    const mpesaSection = document.getElementById('mpesaPaySection');
+    const refCode = document.getElementById('myReferralCode');
+
+    // Generate referral code from shopId
+    if (refCode) refCode.textContent = 'CK' + _cloudShopId.substring(0, 6).toUpperCase();
+
+    if (trial.active && trial.trial) {
+      badge.textContent = 'TRIAL';
+      badge.className = 'badge badge-partial';
+      details.textContent = trial.daysLeft + ' day' + (trial.daysLeft !== 1 ? 's' : '') + ' left in your free trial.';
+      if (mpesaSection) mpesaSection.style.display = 'block';
+    } else if (trial.active) {
+      badge.textContent = 'ACTIVE';
+      badge.className = 'badge badge-cash';
+      details.textContent = 'Your subscription is active. Thank you!';
+      if (mpesaSection) mpesaSection.style.display = 'none';
+    } else {
+      badge.textContent = 'EXPIRED';
+      badge.className = 'badge badge-debt';
+      details.textContent = 'Your subscription has expired. Pay to continue.';
+      if (mpesaSection) mpesaSection.style.display = 'block';
+    }
+  }).catch(() => {});
+}
+
+// ══ MPESA VERIFICATION (semi-auto) ══
+async function verifyMpesaPayment() {
+  const code = document.getElementById('mpesaCodeInput').value.trim().toUpperCase();
+  const msgEl = document.getElementById('mpesaVerifyMsg');
+  msgEl.style.color = 'var(--muted)';
+  msgEl.textContent = '';
+
+  if (!code || code.length < 8) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Enter a valid M-PESA transaction code';
+    return;
+  }
+
+  // Check if code already used
+  const used = JSON.parse(localStorage.getItem('chawkpro_used_codes') || '[]');
+  if (used.includes(code)) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'This code has already been used';
+    return;
+  }
+
+  msgEl.style.color = 'var(--gold)';
+  msgEl.textContent = 'Verifying...';
+
+  try {
+    // Extend subscription by 30 days
+    const now = new Date();
+    const shopDoc = await _db.collection('shops').doc(_cloudShopId).get();
+    const shop = shopDoc.data();
+    let subEnd = new Date();
+
+    // If currently active, extend from current end date
+    if (shop.subscriptionActive && shop.subscriptionEnd) {
+      const currentEnd = shop.subscriptionEnd.toDate ? shop.subscriptionEnd.toDate() : new Date(shop.subscriptionEnd);
+      if (currentEnd > now) subEnd = currentEnd;
+    }
+    subEnd.setDate(subEnd.getDate() + 30);
+
+    await _db.collection('shops').doc(_cloudShopId).update({
+      subscriptionActive: true,
+      subscriptionEnd: firebase.firestore.Timestamp.fromDate(subEnd),
+      lastPaymentCode: code,
+      lastPaymentDate: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Mark code as used locally
+    used.push(code);
+    localStorage.setItem('chawkpro_used_codes', JSON.stringify(used));
+
+    // Close subscription wall if open
+    document.getElementById('subWallOverlay').classList.remove('open');
+
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✓ Payment verified! Subscription active for 30 days.';
+    showToast('Subscription activated! ✓', 'success');
+    renderSubscriptionCard();
+
+    // Log payment to Firestore for your records
+    await _db.collection('payments').add({
+      shopId: _cloudShopId,
+      email: _cloudEmail,
+      code,
+      amount: 100,
+      date: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Verification failed. Check internet and try again.';
+  }
+}
+
+// Also hook into subWallOverlay to show mpesa code input
+document.addEventListener('DOMContentLoaded', () => {
+  const subBtn = document.querySelector('#subWallOverlay .btn-gold');
+  if (subBtn) {
+    subBtn.textContent = 'Enter M-PESA Code';
+    subBtn.onclick = () => {
+      document.getElementById('subWallOverlay').classList.remove('open');
+      showTab('settings', document.getElementById('settingsNav'));
+      setTimeout(() => {
+        document.getElementById('mpesaPaySection').scrollIntoView({behavior:'smooth'});
+      }, 300);
+    };
+  }
+});
+
+// ══ REFERRAL CODE ══
+function shareReferralCode() {
+  const code = document.getElementById('myReferralCode').textContent;
+  const msg = `Join me on CHAWKPRO TRACKER — the best sales management app for your shop!\n\nUse my referral code: *${code}*\nWe both get 1 FREE month!\n\nDownload: https://kwachdavid123-beep.github.io/Chawkpro/`;
+  if (navigator.share) {
+    navigator.share({ title: 'CHAWKPRO Referral', text: msg });
+  } else {
+    navigator.clipboard.writeText(msg).then(() => showToast('Copied to clipboard!', 'success'));
+  }
+}
+
+async function applyReferralCode() {
+  const code = document.getElementById('referralInput').value.trim().toUpperCase();
+  const msgEl = document.getElementById('referralMsg');
+  msgEl.style.color = 'var(--muted)';
+
+  if (!code || code.length < 6) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Enter a valid referral code';
+    return;
+  }
+
+  const myCode = 'CK' + _cloudShopId.substring(0, 6).toUpperCase();
+  if (code === myCode) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = "You can't use your own referral code";
+    return;
+  }
+
+  const alreadyUsed = localStorage.getItem('chawkpro_referral_used');
+  if (alreadyUsed) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'You have already used a referral code';
+    return;
+  }
+
+  msgEl.style.color = 'var(--gold)';
+  msgEl.textContent = 'Applying...';
+
+  try {
+    // Find shop with this referral code (shopId starts with code minus 'CK')
+    const refShopPrefix = code.replace('CK', '').toLowerCase();
+    const shopsSnap = await _db.collection('shops').get();
+    let refShopId = null;
+    shopsSnap.forEach(doc => {
+      if (doc.id.startsWith(refShopPrefix)) refShopId = doc.id;
+    });
+
+    if (!refShopId) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = 'Referral code not found';
+      return;
+    }
+
+    // Give both shops 30 extra days
+    const extend = async (shopId) => {
+      const doc = await _db.collection('shops').doc(shopId).get();
+      const data = doc.data();
+      let end = new Date();
+      if (data.subscriptionEnd) {
+        const cur = data.subscriptionEnd.toDate ? data.subscriptionEnd.toDate() : new Date(data.subscriptionEnd);
+        if (cur > end) end = cur;
+      } else if (data.createdAt) {
+        const created = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+        end = new Date(created.getTime() + 30 * 86400000);
+      }
+      end.setDate(end.getDate() + 30);
+      await _db.collection('shops').doc(shopId).update({
+        subscriptionActive: true,
+        subscriptionEnd: firebase.firestore.Timestamp.fromDate(end)
+      });
+    };
+
+    await extend(_cloudShopId);
+    await extend(refShopId);
+
+    localStorage.setItem('chawkpro_referral_used', code);
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✓ Referral applied! Both shops get 1 free month!';
+    showToast('Referral bonus applied! 🎉', 'success');
+    renderSubscriptionCard();
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Failed. Check internet and try again.';
+  }
+}
+
+// ══ RENDER SETTINGS OVERRIDE — include subscription card ══
+const _origRenderSettings = renderSettings;
+renderSettings = function() {
+  _origRenderSettings();
+  renderSubscriptionCard();
+};
 
 </script>
 </body>
