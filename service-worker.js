@@ -1,12 +1,14 @@
-const CACHE_NAME = 'chawkpro-v5';
-const BASE = '/Chawkpro1';
+const CACHE_NAME = 'chawkpro-v6';
+const BASE = '/Chawkpro';
 
 const ASSETS = [
   BASE + '/',
   BASE + '/index.html',
   BASE + '/manifest.json',
   BASE + '/icon-192.png',
-  BASE + '/icon-512.png'
+  BASE + '/icon-512.png',
+  BASE + '/firebase-config.js',
+  BASE + '/cloud-sync.js'
 ];
 
 self.addEventListener('install', e => {

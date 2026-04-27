@@ -2103,9 +2103,10 @@ setTimeout(() => {
 
 // ══ CLOUD APP ENTRY (called from cloud-sync.js) ══
 function enterCloudApp(role, name) {
-  DB = load();
-  currentUser = { id: 'cloud_' + role, name: name, role: role };
-
+  try {
+    DB = load();
+  } catch(e) { DB = defaultData(); }
+  currentUser = { id: 'cloud_' + role, name: name || role, role: role };
   showScreen('app');
   document.getElementById('topBarName').textContent = name || role;
   const rb = document.getElementById('topBarRole');
@@ -2319,36 +2320,7 @@ function saveSale() {
   renderAll();
   showToast('Sale recorded! ✓', 'success');
 
-  // Send SMS receipt via WhatsApp (opens pre-filled message)
-  if (sendSms && customerPhone) {
-    const shopName = DB.shop?.name || 'CHAWKPRO Shop';
-    const itemLines = salesCreated.map(s => `• ${s.productName} x${s.qty} = KES ${fmt(s.total)}`).join('
-');
-    const amountPaid = type === 'cash' ? grandTotal : (parseFloat(document.getElementById('debtPaid').value) || 0);
-    const balance = Math.max(0, grandTotal - amountPaid);
-    const msg = encodeURIComponent(
-      `🧾 RECEIPT — ${shopName}
-` +
-      `Date: ${todayStr()}
-` +
-      `Customer: ${customerName}
-
-` +
-      `${itemLines}
-
-` +
-      `TOTAL: KES ${fmt(grandTotal)}
-` +
-      `Paid: KES ${fmt(amountPaid)}
-` +
-      (balance > 0 ? `Balance: KES ${fmt(balance)}
-` : '') +
-      `
-Thank you! 🙏`
-    );
-    const phone = customerPhone.replace(/^0/, '254').replace(/\s/g, '');
-    setTimeout(() => window.open(`https://wa.me/${phone}?text=${msg}`, '_blank'), 500);
-  }
+  // receipt shown via modal
 }
 
 
