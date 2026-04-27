@@ -953,26 +953,29 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">NEW SALE</div>
+
+    <!-- Customer Name always visible -->
     <div class="form-group">
-      <label class="form-label">Select Product</label>
-      <select class="form-input" id="saleProduct" onchange="updateSalePrice()">
-        <option value="">-- Choose product --</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Quantity</label>
-        <input type="number" class="form-input" id="saleQty" value="1" min="1" oninput="calcSaleTotal()">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Unit Price (KES)</label>
-        <input type="number" class="form-input" id="saleUnitPrice" placeholder="0" oninput="calcSaleTotal()">
-      </div>
+      <label class="form-label">Customer Name (optional)</label>
+      <input type="text" class="form-input" id="saleCustomerName" placeholder="Walk-in customer">
     </div>
     <div class="form-group">
-      <label class="form-label">Total Amount</label>
-      <input type="number" class="form-input" id="saleTotalAmount" placeholder="0" readonly style="color:var(--gold);font-weight:700;">
+      <label class="form-label">Customer Phone (for SMS receipt)</label>
+      <input type="tel" class="form-input" id="saleCustomerPhone" placeholder="07xxxxxxxx">
     </div>
+
+    <!-- Items List -->
+    <div class="form-label" style="margin-bottom:8px;">ITEMS</div>
+    <div id="saleItemsList"></div>
+    <button class="btn btn-outline btn-full" onclick="addSaleItemRow()" style="margin-bottom:14px;">+ Add Item</button>
+
+    <!-- Receipt Total -->
+    <div class="receipt-total-box">
+      <span style="color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:1px;">Total</span>
+      <span style="font-family:var(--font-display);font-size:26px;color:var(--gold);" id="receiptGrandTotal">KES 0</span>
+    </div>
+
+    <!-- Payment Type -->
     <div class="form-group">
       <label class="form-label">Payment Type</label>
       <select class="form-input" id="saleType" onchange="toggleDebtFields()">
@@ -982,10 +985,6 @@
       </select>
     </div>
     <div id="debtFields" style="display:none;">
-      <div class="form-group">
-        <label class="form-label">Customer Name</label>
-        <input type="text" class="form-input" id="debtCustomer" placeholder="Full name">
-      </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Amount Paid Now</label>
@@ -1000,18 +999,77 @@
         <label class="form-label">Due Date</label>
         <input type="date" class="form-input" id="debtDue">
       </div>
-      <div class="form-group">
-        <label class="form-label">Phone (for WhatsApp reminder)</label>
-        <input type="tel" class="form-input" id="debtPhone" placeholder="07xxxxxxxx">
-      </div>
     </div>
     <div class="form-group">
       <label class="form-label">Notes</label>
       <input type="text" class="form-input" id="saleNotes" placeholder="Optional notes">
     </div>
+
+    <!-- Send Receipt Option -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
+      <input type="checkbox" id="sendSmsReceipt" style="width:18px;height:18px;accent-color:var(--gold);">
+      <label for="sendSmsReceipt" style="font-size:13px;color:var(--text);">Send SMS receipt to customer</label>
+    </div>
+
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-outline" onclick="closeModal('saleModal')" style="flex:1;">Cancel</button>
-      <button class="btn btn-gold" onclick="saveSale()" style="flex:2;">Record Sale</button>
+      <button class="btn btn-gold" onclick="saveSale()" style="flex:2;">Record Sale ✓</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- RECEIPT PREVIEW MODAL -->
+<div id="receiptModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">SEND RECEIPT</div>
+    <div class="form-group">
+      <label class="form-label">Customer Phone</label>
+      <input type="tel" class="form-input" id="receiptPhone" placeholder="07xxxxxxxx" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Edit Receipt Message</label>
+      <textarea class="form-input" id="receiptMessage" rows="10"
+        style="resize:vertical;font-family:monospace;font-size:13px;line-height:1.6;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('receiptModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="sendSmsReceipt()" style="flex:2;">📱 Send SMS</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTOCK MODAL -->
+<div id="restockModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ADD STOCK</div>
+    <div class="form-group">
+      <label class="form-label">Choose Item to Restock</label>
+      <select class="form-input" id="restockSelect" onchange="fillRestockInfo()">
+        <option value="">-- Select existing item --</option>
+      </select>
+    </div>
+    <div id="restockExistingInfo" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--muted);"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Qty to Add</label>
+        <input type="number" class="form-input" id="restockQty" placeholder="0" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Cost Price (KES)</label>
+        <input type="number" class="form-input" id="restockCost" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <input type="text" class="form-input" id="restockNotes" placeholder="e.g. New batch from supplier">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('restockModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveRestock()" style="flex:2;">Add Stock ✓</button>
     </div>
   </div>
 </div>
@@ -1566,119 +1624,7 @@ function renderStock() {
 // ══════════════════════════════════════════
 // SALES
 // ══════════════════════════════════════════
-function openSaleModal() {
-  const sel = document.getElementById('saleProduct');
-  sel.innerHTML = '<option value="">-- Choose product --</option>' +
-    DB.stock.filter(s => s.qty > 0).map(s =>
-      `<option value="${s.id}">${s.name} (${s.qty} left) — KES ${fmt(s.price)}</option>`
-    ).join('');
-  document.getElementById('saleQty').value = 1;
-  document.getElementById('saleUnitPrice').value = '';
-  document.getElementById('saleTotalAmount').value = '';
-  document.getElementById('saleType').value = 'cash';
-  document.getElementById('saleNotes').value = '';
-  document.getElementById('debtFields').style.display = 'none';
-  document.getElementById('debtCustomer').value = '';
-  document.getElementById('debtPaid').value = '';
-  document.getElementById('debtBalance').value = '';
-  document.getElementById('debtPhone').value = '';
-  const t = new Date(); t.setDate(t.getDate() + 7);
-  document.getElementById('debtDue').value = t.toISOString().split('T')[0];
-  openModal('saleModal');
-}
-
-function updateSalePrice() {
-  const id = document.getElementById('saleProduct').value;
-  const item = DB.stock.find(s => s.id === id);
-  if (item) document.getElementById('saleUnitPrice').value = item.price;
-  calcSaleTotal();
-}
-
-function calcSaleTotal() {
-  const qty = parseFloat(document.getElementById('saleQty').value) || 0;
-  const unit = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
-  document.getElementById('saleTotalAmount').value = (qty * unit).toFixed(0);
-  calcDebtBalance();
-}
-
-function toggleDebtFields() {
-  const type = document.getElementById('saleType').value;
-  document.getElementById('debtFields').style.display = type !== 'cash' ? 'block' : 'none';
-  if (type === 'debt') {
-    document.getElementById('debtPaid').value = '0';
-    calcDebtBalance();
-  }
-  if (type === 'cash') {
-    const total = document.getElementById('saleTotalAmount').value;
-    document.getElementById('debtPaid').value = total;
-  }
-}
-
-function calcDebtBalance() {
-  const total = parseFloat(document.getElementById('saleTotalAmount').value) || 0;
-  const paid = parseFloat(document.getElementById('debtPaid').value) || 0;
-  document.getElementById('debtBalance').value = Math.max(0, total - paid).toFixed(0);
-}
-
-function saveSale() {
-  const productId = document.getElementById('saleProduct').value;
-  const qty = parseInt(document.getElementById('saleQty').value) || 0;
-  const unit = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
-  const total = parseFloat(document.getElementById('saleTotalAmount').value) || 0;
-  const type = document.getElementById('saleType').value;
-  const notes = document.getElementById('saleNotes').value.trim();
-
-  if (!productId) { showToast('Select a product', 'error'); return; }
-  if (qty <= 0) { showToast('Enter valid quantity', 'error'); return; }
-  if (total <= 0) { showToast('Enter a price', 'error'); return; }
-
-  const item = DB.stock.find(s => s.id === productId);
-  if (!item) { showToast('Product not found', 'error'); return; }
-  if (item.qty < qty) { showToast(`Only ${item.qty} in stock!`, 'error'); return; }
-
-  const saleId = uid();
-  const sale = {
-    id: saleId,
-    productId, productName: item.name,
-    qty, unit, total,
-    type, notes,
-    date: todayStr(),
-    time: new Date().toLocaleTimeString(),
-    costAtSale: item.cost * qty,
-    staffId: currentUser.id, staffName: currentUser.name
-  };
-
-  // Handle debt
-  if (type !== 'cash') {
-    const customer = document.getElementById('debtCustomer').value.trim();
-    const paid = parseFloat(document.getElementById('debtPaid').value) || 0;
-    const balance = parseFloat(document.getElementById('debtBalance').value) || 0;
-    const due = document.getElementById('debtDue').value;
-    const phone = document.getElementById('debtPhone').value.trim();
-
-    if (!customer) { showToast('Customer name required for debt', 'error'); return; }
-    if (balance > 0) {
-      const newDebt = {
-        id: uid(), saleId,
-        customer, phone, due,
-        total, paid, balance,
-        date: todayStr(),
-        installments: paid > 0 ? [{ id: uid(), amount: paid, date: todayStr(), note: 'Initial payment' }] : []
-      };
-      DB.debts.push(newDebt);
-      if (_cloudShopId) cloudSaveDebt(newDebt);
-    }
-  }
-
-  // Deduct stock
-  item.qty -= qty;
-  DB.sales.push(sale);
-  save();
-  closeModal('saleModal');
-  renderAll();
-  showToast('Sale recorded! ✓', 'success');
-  if (_cloudShopId) cloudSaveSale(sale);
-}
+// Sale functions moved above (multi-item version)
 
 function renderSales() {
   const el = document.getElementById('salesList');
@@ -2148,7 +2094,6 @@ setTimeout(() => {
 
 // ══ CLOUD APP ENTRY (called from cloud-sync.js) ══
 function enterCloudApp(role, name) {
-  // Restore DB from localStorage (offline cache) first
   DB = load();
   currentUser = { id: 'cloud_' + role, name: name, role: role };
 
@@ -2159,17 +2104,306 @@ function enterCloudApp(role, name) {
   rb.className = 'role-badge role-' + role;
 
   const isOwner = role === 'owner';
-  document.getElementById('settingsNav').style.display = isOwner ? '' : 'none';
-  document.getElementById('ownerTarget').style.display = isOwner ? '' : 'none';
 
-  // Init Firebase and load cloud data
+  // Staff restrictions
+  if (!isOwner) {
+    // Hide dashboard nav — staff goes straight to sales
+    document.querySelector('.nav-item[onclick*="dashboard"]').style.display = 'none';
+    document.getElementById('settingsNav').style.display = 'none';
+    // Hide profit figures on dashboard
+    const netBox = document.getElementById('netProfitVal');
+    if (netBox) netBox.closest('.stat-box').style.display = 'none';
+    const costBox = document.getElementById('stockCostVal');
+    if (costBox) costBox.closest('.stat-box').style.display = 'none';
+    const retailBox = document.getElementById('stockRetailVal');
+    if (retailBox) retailBox.closest('.stat-box').style.display = 'none';
+    // Hide add/delete item buttons on stock (staff can only restock + view)
+    const addBtn = document.getElementById('addItemBtn');
+    if (addBtn) addBtn.style.display = 'none';
+    // Staff CAN make sales — FAB and new sale button stay visible
+  } else {
+    document.getElementById('settingsNav').style.display = '';
+    document.getElementById('ownerTarget') && (document.getElementById('ownerTarget').style.display = '');
+  }
+
   initFirebase();
   loadCloudDataIntoApp();
   startCloudListeners();
-  showTab('dashboard', document.querySelector('.nav-item'));
+
+  // Staff starts on Sales tab, owner on Dashboard
+  if (isOwner) {
+    showTab('dashboard', document.querySelector('.nav-item'));
+  } else {
+    showTab('sales', document.querySelectorAll('.nav-item')[2]);
+  }
   checkBackupReminder();
 }
 
+
+
+// ══ MULTI-ITEM SALE FUNCTIONS ══
+
+let saleItems = []; // [{productId, qty, unitPrice}]
+
+function openSaleModal() {
+  saleItems = [];
+  document.getElementById('saleItemsList').innerHTML = '';
+  document.getElementById('receiptGrandTotal').textContent = 'KES 0';
+  document.getElementById('saleCustomerName').value = '';
+  document.getElementById('saleCustomerPhone').value = '';
+  document.getElementById('saleType').value = 'cash';
+  document.getElementById('saleNotes').value = '';
+  document.getElementById('debtFields').style.display = 'none';
+  document.getElementById('debtPaid').value = '';
+  document.getElementById('debtBalance').value = '';
+  const t = new Date(); t.setDate(t.getDate() + 7);
+  document.getElementById('debtDue').value = t.toISOString().split('T')[0];
+  document.getElementById('sendSmsReceipt').checked = false;
+  addSaleItemRow(); // Start with one row
+  openModal('saleModal');
+}
+
+function addSaleItemRow() {
+  const id = 'srow_' + Date.now();
+  saleItems.push({ rowId: id, productId: '', qty: 1, unitPrice: 0 });
+  const options = DB.stock.filter(s => s.qty > 0).map(s =>
+    `<option value="${s.id}" data-price="${s.price}">${s.name} (${s.qty} left) — KES ${fmt(s.price)}</option>`
+  ).join('');
+  const row = document.createElement('div');
+  row.className = 'sale-item-row';
+  row.id = id;
+  row.innerHTML = `
+    <select class="form-input" style="flex:2;font-size:13px;" onchange="updateRowPrice(this,'${id}')">
+      <option value="">-- Item --</option>
+      ${options}
+    </select>
+    <input type="number" class="form-input" style="flex:1;width:60px;" placeholder="Qty" value="1" min="1"
+      oninput="updateRowCalc('${id}',this)" data-role="qty">
+    <input type="number" class="form-input" style="flex:1;width:80px;" placeholder="Price"
+      oninput="updateRowCalc('${id}',this)" data-role="price">
+    <button class="sale-item-remove" onclick="removeSaleRow('${id}')">✕</button>
+  `;
+  document.getElementById('saleItemsList').appendChild(row);
+}
+
+function updateRowPrice(sel, rowId) {
+  const opt = sel.options[sel.selectedIndex];
+  const price = opt ? (opt.dataset.price || 0) : 0;
+  const row = document.getElementById(rowId);
+  row.querySelector('[data-role="price"]').value = price;
+  const item = saleItems.find(r => r.rowId === rowId);
+  if (item) { item.productId = sel.value; item.unitPrice = parseFloat(price); }
+  calcReceiptTotal();
+}
+
+function updateRowCalc(rowId, input) {
+  const row = document.getElementById(rowId);
+  const item = saleItems.find(r => r.rowId === rowId);
+  if (!item) return;
+  if (input.dataset.role === 'qty') item.qty = parseInt(input.value) || 1;
+  if (input.dataset.role === 'price') item.unitPrice = parseFloat(input.value) || 0;
+  calcReceiptTotal();
+}
+
+function removeSaleRow(rowId) {
+  saleItems = saleItems.filter(r => r.rowId !== rowId);
+  const el = document.getElementById(rowId);
+  if (el) el.remove();
+  calcReceiptTotal();
+}
+
+function calcReceiptTotal() {
+  const total = saleItems.reduce((sum, r) => {
+    const row = document.getElementById(r.rowId);
+    if (!row) return sum;
+    const qty = parseInt(row.querySelector('[data-role="qty"]').value) || 0;
+    const price = parseFloat(row.querySelector('[data-role="price"]').value) || 0;
+    return sum + (qty * price);
+  }, 0);
+  document.getElementById('receiptGrandTotal').textContent = 'KES ' + fmt(total);
+  calcDebtBalance();
+}
+
+function calcDebtBalance() {
+  const totalEl = document.getElementById('receiptGrandTotal');
+  const total = parseFloat(totalEl ? totalEl.textContent.replace('KES ','').replace(/,/g,'') : 0) || 0;
+  const paid = parseFloat(document.getElementById('debtPaid')?.value) || 0;
+  const balEl = document.getElementById('debtBalance');
+  if (balEl) balEl.value = Math.max(0, total - paid).toFixed(0);
+}
+
+function toggleDebtFields() {
+  const type = document.getElementById('saleType').value;
+  document.getElementById('debtFields').style.display = type !== 'cash' ? 'block' : 'none';
+  if (type === 'debt') { document.getElementById('debtPaid').value = '0'; calcDebtBalance(); }
+}
+
+function saveSale() {
+  // Collect items from rows
+  const items = [];
+  for (const r of saleItems) {
+    const row = document.getElementById(r.rowId);
+    if (!row) continue;
+    const productId = row.querySelector('select').value;
+    const qty = parseInt(row.querySelector('[data-role="qty"]').value) || 0;
+    const unitPrice = parseFloat(row.querySelector('[data-role="price"]').value) || 0;
+    if (!productId || qty <= 0) continue;
+    items.push({ productId, qty, unitPrice, total: qty * unitPrice });
+  }
+
+  if (!items.length) { showToast('Add at least one item', 'error'); return; }
+
+  // Validate stock
+  for (const it of items) {
+    const stock = DB.stock.find(s => s.id === it.productId);
+    if (!stock) { showToast('Product not found', 'error'); return; }
+    if (stock.qty < it.qty) { showToast(`Only ${stock.qty} of ${stock.name} in stock!`, 'error'); return; }
+  }
+
+  const grandTotal = items.reduce((s, i) => s + i.total, 0);
+  const type = document.getElementById('saleType').value;
+  const notes = document.getElementById('saleNotes').value.trim();
+  const customerName = document.getElementById('saleCustomerName').value.trim() || 'Walk-in';
+  const customerPhone = document.getElementById('saleCustomerPhone').value.trim();
+  const sendSms = document.getElementById('sendSmsReceipt').checked;
+  const saleId = uid();
+
+  // Create sale records & deduct stock
+  const salesCreated = [];
+  for (const it of items) {
+    const stock = DB.stock.find(s => s.id === it.productId);
+    const sale = {
+      id: uid(), saleGroupId: saleId,
+      productId: it.productId, productName: stock.name,
+      qty: it.qty, unit: it.unitPrice, total: it.total,
+      type, notes, customerName, customerPhone,
+      date: todayStr(), time: new Date().toLocaleTimeString(),
+      costAtSale: stock.cost * it.qty,
+      staffId: currentUser.id, staffName: currentUser.name
+    };
+    stock.qty -= it.qty;
+    DB.sales.push(sale);
+    salesCreated.push(sale);
+    if (_cloudShopId) cloudSaveSale(sale);
+  }
+
+  // Handle debt/partial
+  if (type !== 'cash') {
+    const paid = parseFloat(document.getElementById('debtPaid').value) || 0;
+    const balance = Math.max(0, grandTotal - paid);
+    const due = document.getElementById('debtDue').value;
+    if (balance > 0) {
+      const newDebt = {
+        id: uid(), saleId,
+        customer: customerName, phone: customerPhone, due,
+        total: grandTotal, paid, balance,
+        date: todayStr(),
+        installments: paid > 0 ? [{ id: uid(), amount: paid, date: todayStr(), note: 'Initial payment' }] : []
+      };
+      DB.debts.push(newDebt);
+      if (_cloudShopId) cloudSaveDebt(newDebt);
+    }
+  }
+
+  save();
+  closeModal('saleModal');
+  renderAll();
+  showToast('Sale recorded! ✓', 'success');
+
+  // Send SMS receipt via WhatsApp (opens pre-filled message)
+  if (sendSms && customerPhone) {
+    const shopName = DB.shop?.name || 'CHAWKPRO Shop';
+    const itemLines = salesCreated.map(s => `• ${s.productName} x${s.qty} = KES ${fmt(s.total)}`).join('
+');
+    const amountPaid = type === 'cash' ? grandTotal : (parseFloat(document.getElementById('debtPaid').value) || 0);
+    const balance = Math.max(0, grandTotal - amountPaid);
+    const msg = encodeURIComponent(
+      `🧾 RECEIPT — ${shopName}
+` +
+      `Date: ${todayStr()}
+` +
+      `Customer: ${customerName}
+
+` +
+      `${itemLines}
+
+` +
+      `TOTAL: KES ${fmt(grandTotal)}
+` +
+      `Paid: KES ${fmt(amountPaid)}
+` +
+      (balance > 0 ? `Balance: KES ${fmt(balance)}
+` : '') +
+      `
+Thank you! 🙏`
+    );
+    const phone = customerPhone.replace(/^0/, '254').replace(/\s/g, '');
+    setTimeout(() => window.open(`https://wa.me/${phone}?text=${msg}`, '_blank'), 500);
+  }
+}
+
+
+// ══ SEND SMS RECEIPT ══
+function sendSmsReceipt() {
+  const phone = document.getElementById('receiptPhone').value.trim();
+  const message = document.getElementById('receiptMessage').value.trim();
+  if (!phone) { showToast('Enter phone number', 'error'); return; }
+  if (!message) { showToast('Receipt message is empty', 'error'); return; }
+  // sms: protocol opens native SMS app pre-filled
+  const smsLink = `sms:${phone}?body=${encodeURIComponent(message)}`;
+  window.location.href = smsLink;
+  closeModal('receiptModal');
+}
+
+// ══ RESTOCK FUNCTIONS ══
+function openRestockModal() {
+  const sel = document.getElementById('restockSelect');
+  sel.innerHTML = '<option value="">-- Select existing item --</option>' +
+    DB.stock.map(s => `<option value="${s.id}">${s.name} (Current: ${s.qty} units, Cost: KES ${fmt(s.cost)})</option>`).join('');
+  document.getElementById('restockQty').value = '';
+  document.getElementById('restockCost').value = '';
+  document.getElementById('restockNotes').value = '';
+  document.getElementById('restockExistingInfo').style.display = 'none';
+  openModal('restockModal');
+}
+
+function fillRestockInfo() {
+  const id = document.getElementById('restockSelect').value;
+  const item = DB.stock.find(s => s.id === id);
+  const info = document.getElementById('restockExistingInfo');
+  if (item) {
+    info.style.display = 'block';
+    info.innerHTML = `📦 <strong>${item.name}</strong><br>Current stock: <strong>${item.qty} units</strong><br>Current cost price: <strong>KES ${fmt(item.cost)}</strong>`;
+    document.getElementById('restockCost').value = item.cost;
+  } else {
+    info.style.display = 'none';
+  }
+}
+
+function saveRestock() {
+  const id = document.getElementById('restockSelect').value;
+  const addQty = parseInt(document.getElementById('restockQty').value) || 0;
+  const newCost = parseFloat(document.getElementById('restockCost').value) || 0;
+  const notes = document.getElementById('restockNotes').value.trim();
+
+  if (!id) { showToast('Select an item', 'error'); return; }
+  if (addQty <= 0) { showToast('Enter quantity to add', 'error'); return; }
+
+  const item = DB.stock.find(s => s.id === id);
+  if (!item) { showToast('Item not found', 'error'); return; }
+
+  const oldQty = item.qty;
+  item.qty += addQty;
+  if (newCost > 0) item.cost = newCost; // Update cost price
+  if (notes) item.notes = notes;
+
+  save();
+  closeModal('restockModal');
+  renderStock();
+  renderDashboard();
+  showToast(`Added ${addQty} units to ${item.name}. Total: ${item.qty}`, 'success');
+  if (_cloudShopId) cloudSaveItem(item);
+}
 
 // ══ EDIT DEBTOR ══
 function editDebtor(id) {
