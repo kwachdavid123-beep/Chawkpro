@@ -1189,20 +1189,29 @@ window.addEventListener('load', function() {
 });
 
 setTimeout(() => {
-  // Ensure Firebase initialized
-  if (typeof firebase !== 'undefined' && (!_auth || !_db)) initFirebase();
-  // Check for cloud session first
   try {
+    // Ensure Firebase initialized
+    if (typeof firebase !== 'undefined' && (!_auth || !_db)) {
+      initFirebase();
+    }
+    // Check for saved session
     const session = loadCloudSession();
     if (session && session.shopId) {
       _cloudShopId = session.shopId;
       _cloudRole   = session.role;
       _cloudEmail  = session.email;
       _cloudName   = session.name;
-      enterCloudApp(session.role, session.name);
+      try {
+        enterCloudApp(session.role, session.name);
+      } catch(e2) {
+        console.warn('enterCloudApp failed:', e2);
+        showScreen('cloudAuth');
+      }
       return;
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn('Splash error:', e);
+  }
   showScreen('cloudAuth');
 }, 2500);
 
