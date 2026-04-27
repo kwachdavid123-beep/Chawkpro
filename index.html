@@ -954,28 +954,32 @@
     <div class="modal-handle"></div>
     <div class="modal-title">NEW SALE</div>
 
-    <!-- Customer Name always visible -->
-    <div class="form-group">
-      <label class="form-label">Customer Name (optional)</label>
-      <input type="text" class="form-input" id="saleCustomerName" placeholder="Walk-in customer">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Customer Phone (for SMS receipt)</label>
-      <input type="tel" class="form-input" id="saleCustomerPhone" placeholder="07xxxxxxxx">
+    <!-- Customer -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Customer Name</label>
+        <input type="text" class="form-input" id="saleCustomerName" placeholder="Walk-in">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone (SMS)</label>
+        <input type="tel" class="form-input" id="saleCustomerPhone" placeholder="07xx">
+      </div>
     </div>
 
-    <!-- Items List -->
-    <div class="form-label" style="margin-bottom:8px;">ITEMS</div>
-    <div id="saleItemsList"></div>
-    <button class="btn btn-outline btn-full" onclick="addSaleItemRow()" style="margin-bottom:14px;">+ Add Item</button>
+    <!-- Stock Item Picker -->
+    <div class="form-label" style="margin-bottom:8px;">TAP ITEM TO ADD</div>
+    <div id="stockPickerList" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;"></div>
 
-    <!-- Receipt Total -->
+    <!-- Selected Items Cart -->
+    <div id="saleItemsList" style="margin-bottom:8px;"></div>
+
+    <!-- Grand Total -->
     <div class="receipt-total-box">
       <span style="color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:1px;">Total</span>
       <span style="font-family:var(--font-display);font-size:26px;color:var(--gold);" id="receiptGrandTotal">KES 0</span>
     </div>
 
-    <!-- Payment Type -->
+    <!-- Payment -->
     <div class="form-group">
       <label class="form-label">Payment Type</label>
       <select class="form-input" id="saleType" onchange="toggleDebtFields()">
@@ -1002,23 +1006,18 @@
     </div>
     <div class="form-group">
       <label class="form-label">Notes</label>
-      <input type="text" class="form-input" id="saleNotes" placeholder="Optional notes">
+      <input type="text" class="form-input" id="saleNotes" placeholder="Optional">
     </div>
-
-    <!-- Send Receipt Option -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
       <input type="checkbox" id="sendSmsReceipt" style="width:18px;height:18px;accent-color:var(--gold);">
-      <label for="sendSmsReceipt" style="font-size:13px;color:var(--text);">Send SMS receipt to customer</label>
+      <label for="sendSmsReceipt" style="font-size:13px;">Send SMS receipt to customer</label>
     </div>
-
-    <div style="display:flex;gap:10px;margin-top:8px;">
+    <div style="display:flex;gap:10px;">
       <button class="btn btn-outline" onclick="closeModal('saleModal')" style="flex:1;">Cancel</button>
       <button class="btn btn-gold" onclick="saveSale()" style="flex:2;">Record Sale ✓</button>
     </div>
   </div>
 </div>
-
-
 
 <!-- RECEIPT PREVIEW MODAL -->
 <div id="receiptModal" class="modal-overlay">
@@ -1037,6 +1036,47 @@
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-outline" onclick="closeModal('receiptModal')" style="flex:1;">Cancel</button>
       <button class="btn btn-gold" onclick="sendSmsReceipt()" style="flex:2;">📱 Send SMS</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT DEBT MODAL -->
+<div id="editDebtModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">EDIT DEBT</div>
+    <input type="hidden" id="editDebtId">
+    <div class="form-group">
+      <label class="form-label">Customer Name</label>
+      <input type="text" class="form-input" id="editDebtCustomer" placeholder="Customer name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input type="tel" class="form-input" id="editDebtPhone" placeholder="07xxxxxxxx">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Total Amount (KES)</label>
+        <input type="number" class="form-input" id="editDebtTotal" oninput="recalcEditDebt()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount Paid</label>
+        <input type="number" class="form-input" id="editDebtPaid" oninput="recalcEditDebt()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Balance Remaining</label>
+      <input type="number" class="form-input" id="editDebtBalDisplay" readonly style="color:var(--red);">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Due Date</label>
+      <input type="date" class="form-input" id="editDebtDue">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-red btn-sm" onclick="deleteDebt()" style="flex:1;">🗑 Delete</button>
+      <button class="btn btn-outline" onclick="closeModal('editDebtModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveDebtEdit()" style="flex:2;">Save ✓</button>
     </div>
   </div>
 </div>
@@ -1163,7 +1203,7 @@ function defaultData() {
   };
 }
 
-let DB = load();
+let DB = loadWithFallback();
 let currentUser = null;
 let pinBuffer = '';
 let currentPeriod = 'daily';
@@ -1178,6 +1218,30 @@ function load() {
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  // Also save a timestamped deep backup
+  localStorage.setItem('chawkpro_deep_backup', JSON.stringify({
+    ...DB, _savedAt: Date.now()
+  }));
+}
+
+function loadWithFallback() {
+  // Try primary storage
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.stock !== undefined) return parsed;
+    }
+  } catch(e) {}
+  // Try deep backup
+  try {
+    const backup = localStorage.getItem('chawkpro_deep_backup');
+    if (backup) {
+      const parsed = JSON.parse(backup);
+      if (parsed && parsed.stock !== undefined) return parsed;
+    }
+  } catch(e) {}
+  return defaultData();
 }
 
 // ══════════════════════════════════════════
@@ -1633,7 +1697,7 @@ function renderStock() {
 // ══════════════════════════════════════════
 // SALES
 // ══════════════════════════════════════════
-// Sale functions moved above (multi-item version)
+// Sale functions below
 
 function renderSales() {
   const el = document.getElementById('salesList');
@@ -1724,7 +1788,7 @@ function debtCard(d, cleared = false) {
       </div>` : ''}
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       ${d.balance > 0 ? `<button class="btn btn-green btn-sm" onclick="openPaymentModal('${d.id}')">+ Record Payment</button>` : ''}
-      <button class="btn btn-outline btn-sm" onclick="editDebtor('${d.id}')">✏️ Edit</button>
+      <button class="btn btn-outline btn-sm" onclick="editDebtor('${d.id}')">✏️ Edit / Delete</button>
       ${d.phone ? `<div class="whatsapp-btn" onclick="sendWhatsApp('${d.id}')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp Reminder
@@ -2152,12 +2216,12 @@ function enterCloudApp(role, name) {
 
 
 // ══ MULTI-ITEM SALE FUNCTIONS ══
-
-let saleItems = []; // [{productId, qty, unitPrice}]
+let saleItems = [];
 
 function openSaleModal() {
   saleItems = [];
-  document.getElementById('saleItemsList').innerHTML = '';
+  renderSalePicker();
+  renderSaleCart();
   document.getElementById('receiptGrandTotal').textContent = 'KES 0';
   document.getElementById('saleCustomerName').value = '';
   document.getElementById('saleCustomerPhone').value = '';
@@ -2166,70 +2230,97 @@ function openSaleModal() {
   document.getElementById('debtFields').style.display = 'none';
   document.getElementById('debtPaid').value = '';
   document.getElementById('debtBalance').value = '';
+  document.getElementById('sendSmsReceipt').checked = false;
   const t = new Date(); t.setDate(t.getDate() + 7);
   document.getElementById('debtDue').value = t.toISOString().split('T')[0];
-  document.getElementById('sendSmsReceipt').checked = false;
-  addSaleItemRow(); // Start with one row
   openModal('saleModal');
 }
 
-function addSaleItemRow() {
-  const id = 'srow_' + Date.now();
-  saleItems.push({ rowId: id, productId: '', qty: 1, unitPrice: 0 });
-  const options = DB.stock.filter(s => s.qty > 0).map(s =>
-    `<option value="${s.id}" data-price="${s.price}">${s.name} (${s.qty} left) — KES ${fmt(s.price)}</option>`
-  ).join('');
-  const row = document.createElement('div');
-  row.className = 'sale-item-row';
-  row.id = id;
-  row.innerHTML = `
-    <select class="form-input" style="flex:2;font-size:13px;" onchange="updateRowPrice(this,'${id}')">
-      <option value="">-- Item --</option>
-      ${options}
-    </select>
-    <input type="number" class="form-input" style="flex:1;width:60px;" placeholder="Qty" value="1" min="1"
-      oninput="updateRowCalc('${id}',this)" data-role="qty">
-    <input type="number" class="form-input" style="flex:1;width:80px;" placeholder="Price"
-      oninput="updateRowCalc('${id}',this)" data-role="price">
-    <button class="sale-item-remove" onclick="removeSaleRow('${id}')">✕</button>
-  `;
-  document.getElementById('saleItemsList').appendChild(row);
+function renderSalePicker() {
+  const el = document.getElementById('stockPickerList');
+  const inStock = DB.stock.filter(s => s.qty > 0);
+  if (!inStock.length) {
+    el.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:13px;text-align:center;">No items in stock</div>';
+    return;
+  }
+  el.innerHTML = inStock.map(s => `
+    <div onclick="addItemToCart('${s.id}')"
+      style="display:flex;align-items:center;justify-content:space-between;
+      padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;
+      transition:background .15s;" 
+      onmousedown="this.style.background='var(--surface2)'"
+      onmouseup="this.style.background=''"
+      ontouchstart="this.style.background='var(--surface2)'"
+      ontouchend="this.style.background=''">
+      <div>
+        <div style="font-weight:600;font-size:14px;">${s.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${s.qty} in stock · KES ${fmt(s.price)} each</div>
+      </div>
+      <div style="color:var(--gold);font-size:20px;font-weight:700;">+</div>
+    </div>
+  `).join('');
 }
 
-function updateRowPrice(sel, rowId) {
-  const opt = sel.options[sel.selectedIndex];
-  const price = opt ? (opt.dataset.price || 0) : 0;
-  const row = document.getElementById(rowId);
-  row.querySelector('[data-role="price"]').value = price;
-  const item = saleItems.find(r => r.rowId === rowId);
-  if (item) { item.productId = sel.value; item.unitPrice = parseFloat(price); }
+function addItemToCart(productId) {
+  const existing = saleItems.find(r => r.productId === productId);
+  const stock = DB.stock.find(s => s.id === productId);
+  if (!stock) return;
+  if (existing) {
+    if (existing.qty >= stock.qty) { showToast('Max stock reached!', 'error'); return; }
+    existing.qty++;
+  } else {
+    saleItems.push({ productId, qty: 1, unitPrice: stock.price, name: stock.name });
+  }
+  renderSaleCart();
   calcReceiptTotal();
 }
 
-function updateRowCalc(rowId, input) {
-  const row = document.getElementById(rowId);
-  const item = saleItems.find(r => r.rowId === rowId);
-  if (!item) return;
-  if (input.dataset.role === 'qty') item.qty = parseInt(input.value) || 1;
-  if (input.dataset.role === 'price') item.unitPrice = parseFloat(input.value) || 0;
+function renderSaleCart() {
+  const el = document.getElementById('saleItemsList');
+  if (!saleItems.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:8px;">Tap items above to add</div>';
+    return;
+  }
+  el.innerHTML = saleItems.map((r, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px;
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;margin-bottom:6px;">
+      <div style="flex:2;">
+        <div style="font-size:13px;font-weight:600;">${r.name}</div>
+        <div style="font-size:11px;color:var(--muted);">KES ${fmt(r.unitPrice)} each</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button onclick="changeCartQty(${i},-1)" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;color:var(--text);font-size:16px;cursor:pointer;">−</button>
+        <span style="font-weight:700;min-width:20px;text-align:center;">${r.qty}</span>
+        <button onclick="changeCartQty(${i},1)" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;color:var(--text);font-size:16px;cursor:pointer;">+</button>
+      </div>
+      <div style="min-width:60px;text-align:right;font-weight:700;color:var(--gold);">KES ${fmt(r.qty * r.unitPrice)}</div>
+      <button onclick="removeCartItem(${i})" style="background:rgba(255,71,87,.15);border:1px solid rgba(255,71,87,.3);color:var(--red);border-radius:6px;width:28px;height:28px;cursor:pointer;">✕</button>
+    </div>
+  `).join('');
+}
+
+function changeCartQty(index, delta) {
+  const item = saleItems[index];
+  const stock = DB.stock.find(s => s.id === item.productId);
+  const newQty = item.qty + delta;
+  if (newQty <= 0) { removeCartItem(index); return; }
+  if (newQty > stock.qty) { showToast('Max stock reached!', 'error'); return; }
+  item.qty = newQty;
+  renderSaleCart();
   calcReceiptTotal();
 }
 
-function removeSaleRow(rowId) {
-  saleItems = saleItems.filter(r => r.rowId !== rowId);
-  const el = document.getElementById(rowId);
-  if (el) el.remove();
+function removeCartItem(index) {
+  saleItems.splice(index, 1);
+  renderSaleCart();
   calcReceiptTotal();
 }
+
+// Row functions replaced by cart functions above
 
 function calcReceiptTotal() {
-  const total = saleItems.reduce((sum, r) => {
-    const row = document.getElementById(r.rowId);
-    if (!row) return sum;
-    const qty = parseInt(row.querySelector('[data-role="qty"]').value) || 0;
-    const price = parseFloat(row.querySelector('[data-role="price"]').value) || 0;
-    return sum + (qty * price);
-  }, 0);
+  const total = saleItems.reduce((sum, r) => sum + (r.qty * r.unitPrice), 0);
   document.getElementById('receiptGrandTotal').textContent = 'KES ' + fmt(total);
   calcDebtBalance();
 }
@@ -2249,17 +2340,9 @@ function toggleDebtFields() {
 }
 
 function saveSale() {
-  // Collect items from rows
-  const items = [];
-  for (const r of saleItems) {
-    const row = document.getElementById(r.rowId);
-    if (!row) continue;
-    const productId = row.querySelector('select').value;
-    const qty = parseInt(row.querySelector('[data-role="qty"]').value) || 0;
-    const unitPrice = parseFloat(row.querySelector('[data-role="price"]').value) || 0;
-    if (!productId || qty <= 0) continue;
-    items.push({ productId, qty, unitPrice, total: qty * unitPrice });
-  }
+  // Collect items from cart
+  const items = saleItems.filter(r => r.productId && r.qty > 0)
+    .map(r => ({ productId: r.productId, qty: r.qty, unitPrice: r.unitPrice, total: r.qty * r.unitPrice }));
 
   if (!items.length) { showToast('Add at least one item', 'error'); return; }
 
@@ -2336,6 +2419,20 @@ function sendSmsReceipt() {
   closeModal('receiptModal');
 }
 
+
+// ══ DELETE SALE ══
+function deleteSale(id) {
+  if (!confirm('Delete this sale record?')) return;
+  DB.sales = DB.sales.filter(s => s.id !== id);
+  save();
+  if (_cloudShopId) {
+    _db.collection('shops').doc(_cloudShopId).collection('sales').doc(id).delete().catch(()=>{});
+  }
+  renderSales();
+  renderDashboard();
+  showToast('Sale deleted', 'info');
+}
+
 // ══ RESTOCK FUNCTIONS ══
 function openRestockModal() {
   const sel = document.getElementById('restockSelect');
@@ -2390,19 +2487,52 @@ function saveRestock() {
 function editDebtor(id) {
   const d = DB.debts.find(x => x.id === id);
   if (!d) return;
-  const newName = prompt('Customer name:', d.customer);
-  if (newName === null) return;
-  const newPhone = prompt('Phone number:', d.phone || '');
-  if (newPhone === null) return;
-  const newDue = prompt('Due date (YYYY-MM-DD):', d.due || '');
-  if (newDue === null) return;
-  d.customer = newName.trim() || d.customer;
-  d.phone = newPhone.trim();
-  d.due = newDue.trim();
+  document.getElementById('editDebtId').value = id;
+  document.getElementById('editDebtCustomer').value = d.customer || '';
+  document.getElementById('editDebtPhone').value = d.phone || '';
+  document.getElementById('editDebtTotal').value = d.total || 0;
+  document.getElementById('editDebtPaid').value = (d.total - d.balance) || 0;
+  document.getElementById('editDebtBalDisplay').value = d.balance || 0;
+  document.getElementById('editDebtDue').value = d.due || '';
+  openModal('editDebtModal');
+}
+
+function recalcEditDebt() {
+  const total = parseFloat(document.getElementById('editDebtTotal').value) || 0;
+  const paid = parseFloat(document.getElementById('editDebtPaid').value) || 0;
+  document.getElementById('editDebtBalDisplay').value = Math.max(0, total - paid).toFixed(0);
+}
+
+function saveDebtEdit() {
+  const id = document.getElementById('editDebtId').value;
+  const d = DB.debts.find(x => x.id === id);
+  if (!d) return;
+  const total = parseFloat(document.getElementById('editDebtTotal').value) || 0;
+  const paid = parseFloat(document.getElementById('editDebtPaid').value) || 0;
+  d.customer = document.getElementById('editDebtCustomer').value.trim() || d.customer;
+  d.phone = document.getElementById('editDebtPhone').value.trim();
+  d.due = document.getElementById('editDebtDue').value;
+  d.total = total;
+  d.paid = paid;
+  d.balance = Math.max(0, total - paid);
   save();
   if (_cloudShopId) cloudSaveDebt(d);
+  closeModal('editDebtModal');
   renderDebts();
-  showToast('Debtor updated ✓', 'success');
+  showToast('Debt updated ✓', 'success');
+}
+
+function deleteDebt() {
+  const id = document.getElementById('editDebtId').value;
+  if (!confirm('Delete this debt record? This cannot be undone.')) return;
+  DB.debts = DB.debts.filter(x => x.id !== id);
+  save();
+  if (_cloudShopId) {
+    _db.collection('shops').doc(_cloudShopId).collection('debts').doc(id).delete().catch(()=>{});
+  }
+  closeModal('editDebtModal');
+  renderDebts();
+  showToast('Debt deleted', 'info');
 }
 
 // ══ SUBSCRIPTION STATUS IN SETTINGS ══
