@@ -698,6 +698,28 @@
         </div>
       </div>
 
+      <!-- SALES REPORT CARD -->
+      <div class="card" id="salesReportCard">
+        <div class="card-header">
+          <div class="card-title">Sales Report</div>
+          <div style="display:flex;gap:6px;">
+            <button class="period-btn active" onclick="setReportPeriod('today',this)">Today</button>
+            <button class="period-btn" onclick="setReportPeriod('week',this)">Week</button>
+            <button class="period-btn" onclick="setReportPeriod('month',this)">Month</button>
+          </div>
+        </div>
+        <div id="salesReportBody"></div>
+      </div>
+
+      <!-- STAFF REPORT CARD (owner only) -->
+      <div class="card" id="staffReportCard">
+        <div class="card-header">
+          <div class="card-title">Staff Performance</div>
+          <span style="font-size:11px;color:var(--muted);" id="staffReportPeriod">Today</span>
+        </div>
+        <div id="staffReportBody"></div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div class="card-title">Sales vs Target</div>
@@ -742,8 +764,13 @@
     <div id="tab-stock" class="tab-content">
       <div class="section-header">
         <div class="section-title">STOCK</div>
-        <button class="btn btn-gold btn-sm" id="addStockBtn" onclick="openStockModal()">+ Add Item</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline btn-sm" id="restockBtn" onclick="openRestockModal()">+ Restock</button>
+          <button class="btn btn-gold btn-sm" id="addItemBtn" onclick="openStockModal()">+ New Item</button>
+        </div>
       </div>
+      <input type="search" class="form-input" id="stockSearch" placeholder="🔍 Search stock..."
+        oninput="renderStock()" style="margin-bottom:12px;">
       <div id="stockList"></div>
     </div>
 
@@ -752,6 +779,27 @@
       <div class="section-header">
         <div class="section-title">SALES</div>
         <button class="btn btn-gold btn-sm" onclick="openSaleModal()">+ New Sale</button>
+      </div>
+      <!-- Sales summary bar -->
+      <div id="salesSummaryBar" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Showing</div>
+          <div style="font-weight:700;" id="salesCount">0 sales</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Total</div>
+          <div style="font-family:var(--font-display);color:var(--gold);" id="salesFilterTotal">KES 0</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input type="search" class="form-input" id="salesSearch" placeholder="🔍 Search sales..."
+          oninput="renderSales()" style="flex:1;">
+        <select class="form-input" id="salesPeriodFilter" onchange="renderSales()" style="flex:0 0 100px;font-size:12px;">
+          <option value="all">All Time</option>
+          <option value="today" selected>Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
       </div>
       <div id="salesList"></div>
     </div>
@@ -1140,7 +1188,7 @@
 <div id="userModal" class="modal-overlay">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="userModalTitle">ADD USER</div>
+    <div class="modal-title" id="userModalTitle">ADD STAFF</div>
     <input type="hidden" id="editUserId">
     <div class="form-group">
       <label class="form-label">Full Name</label>
@@ -1148,18 +1196,30 @@
     </div>
     <div class="form-group">
       <label class="form-label">Role</label>
-      <select class="form-input" id="userRole">
+      <select class="form-input" id="userRole" onchange="toggleStaffEmailFields()">
         <option value="staff">Staff (Sales Only)</option>
         <option value="owner">Owner (Full Access)</option>
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">PIN (4–6 digits)</label>
-      <input type="password" inputmode="numeric" class="form-input" id="userPin" placeholder="Enter PIN">
+    <!-- Cloud login fields — shown for staff -->
+    <div id="staffCloudFields">
+      <div class="form-group">
+        <label class="form-label">Staff Email (for login on any phone)</label>
+        <input type="email" class="form-input" id="staffEmail" placeholder="staff@email.com" autocomplete="off" inputmode="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Staff Password</label>
+        <input type="password" class="form-input" id="staffPassword" placeholder="Min 6 characters" autocomplete="new-password">
+      </div>
     </div>
+    <div class="form-group">
+      <label class="form-label">PIN (4–6 digits) — for quick login</label>
+      <input type="password" inputmode="numeric" class="form-input" id="userPin" placeholder="e.g. 1234">
+    </div>
+    <div id="userSaveError" style="color:var(--red);font-size:13px;text-align:center;min-height:16px;margin-bottom:8px;"></div>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-outline" onclick="closeModal('userModal')" style="flex:1;">Cancel</button>
-      <button class="btn btn-gold" onclick="saveUser()" style="flex:2;">Save User</button>
+      <button class="btn btn-gold" onclick="saveUser()" style="flex:2;" id="saveUserBtn">Save Staff</button>
     </div>
   </div>
 </div>
@@ -1910,35 +1970,96 @@ function openUserModal(id) {
   openModal('userModal');
 }
 
-function saveUser() {
+async function saveUser() {
   const name = document.getElementById('userName').value.trim();
   const role = document.getElementById('userRole').value;
   const pin = document.getElementById('userPin').value.trim();
   const editId = document.getElementById('editUserId').value;
+  const errEl = document.getElementById('userSaveError');
+  errEl.textContent = '';
 
   if (!name) { showToast('Name required', 'error'); return; }
-  if (!editId && (!pin || pin.length < 4 || pin.length > 6)) { showToast('PIN must be 4–6 digits', 'error'); return; }
-  if (pin && (pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin))) { showToast('PIN must be 4–6 digits', 'error'); return; }
+  if (!pin || pin.length < 4) { errEl.textContent = 'PIN must be 4–6 digits'; return; }
 
   if (editId) {
+    // Editing existing user
     const u = DB.users.find(x => x.id === editId);
-    u.name = name; u.role = role;
-    if (pin) u.pin = pin;
-  } else {
-    DB.users.push({ id: uid(), name, role, pin });
-    // If cloud is active, also create cloud staff account
-    if (_cloudShopId && role === 'staff') {
-      const tempPassword = 'Chawkpro' + pin + '!';
-      addCloudStaff(name, name.toLowerCase().replace(/\s/g,'') + '@chawkpro.local', tempPassword, pin)
-        .catch(() => {});
+    if (u) { u.name = name; u.role = role; if (pin) u.pin = pin; }
+    save();
+    closeModal('userModal');
+    renderSettings();
+    populateLoginUsers();
+    showToast('User updated ✓', 'success');
+    return;
+  }
+
+  // Adding new staff
+  const email = document.getElementById('staffEmail')?.value.trim();
+  const password = document.getElementById('staffPassword')?.value;
+
+  if (role === 'staff') {
+    if (!email) { errEl.textContent = 'Email required for staff cloud login'; return; }
+    if (!password || password.length < 6) { errEl.textContent = 'Password must be min 6 characters'; return; }
+
+    // Disable button while creating
+    const btn = document.getElementById('saveUserBtn');
+    btn.textContent = 'Creating...'; btn.disabled = true;
+
+    // Create cloud account for staff
+    const result = await addCloudStaff(name, email, password, pin);
+
+    btn.textContent = 'Save Staff'; btn.disabled = false;
+
+    if (!result || result.error) {
+      errEl.textContent = result?.error || 'Failed to create staff account';
+      return;
     }
   }
+
+  // Add to local DB
+  DB.users.push({ id: uid(), name, role, pin, email: email || '' });
   save();
   closeModal('userModal');
   renderSettings();
   populateLoginUsers();
-  showToast(editId ? 'User updated' : 'User added!', 'success');
+  showToast(name + ' added! They can now log in on any phone.', 'success');
 }
+
+function toggleStaffEmailFields() {
+  const role = document.getElementById('userRole').value;
+  const fields = document.getElementById('staffCloudFields');
+  if (fields) fields.style.display = role === 'staff' ? 'block' : 'none';
+}
+
+function openUserModal(editId = null) {
+  document.getElementById('editUserId').value = editId || '';
+  document.getElementById('userName').value = '';
+  document.getElementById('userRole').value = 'staff';
+  document.getElementById('userPin').value = '';
+  document.getElementById('userSaveError').textContent = '';
+  const emailEl = document.getElementById('staffEmail');
+  const passEl = document.getElementById('staffPassword');
+  if (emailEl) emailEl.value = '';
+  if (passEl) passEl.value = '';
+  if (editId) {
+    const u = DB.users.find(x => x.id === editId);
+    if (u) {
+      document.getElementById('userName').value = u.name;
+      document.getElementById('userRole').value = u.role;
+      document.getElementById('userModalTitle').textContent = 'EDIT USER';
+      document.getElementById('saveUserBtn').textContent = 'Update User';
+    }
+    // Hide cloud fields when editing
+    const fields = document.getElementById('staffCloudFields');
+    if (fields) fields.style.display = 'none';
+  } else {
+    document.getElementById('userModalTitle').textContent = 'ADD STAFF';
+    document.getElementById('saveUserBtn').textContent = 'Save Staff';
+    toggleStaffEmailFields();
+  }
+  openModal('userModal');
+}
+
 
 function deleteUser(id) {
   if (!confirm('Remove this user?')) return;
@@ -2181,23 +2302,31 @@ function enterCloudApp(role, name) {
 
   // Staff restrictions
   if (!isOwner) {
-    // Hide dashboard nav — staff goes straight to sales
-    document.querySelector('.nav-item[onclick*="dashboard"]').style.display = 'none';
+    // Staff restrictions on dashboard
     document.getElementById('settingsNav').style.display = 'none';
-    // Hide profit figures on dashboard
-    const netBox = document.getElementById('netProfitVal');
-    if (netBox) netBox.closest('.stat-box').style.display = 'none';
-    const costBox = document.getElementById('stockCostVal');
-    if (costBox) costBox.closest('.stat-box').style.display = 'none';
-    const retailBox = document.getElementById('stockRetailVal');
-    if (retailBox) retailBox.closest('.stat-box').style.display = 'none';
+
+    // Hide profit + stock value boxes — staff cannot see financials
+    const hiddenBoxIds = ['netProfitVal', 'stockCostVal', 'stockRetailVal'];
+    hiddenBoxIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.closest('.stat-box')) el.closest('.stat-box').style.display = 'none';
+    });
+
+    // Staff CAN see target but CANNOT edit it — hide edit button on target
+    const targetEditBtn = document.getElementById('ownerTarget');
+    if (targetEditBtn) targetEditBtn.style.display = 'none';
+
     // Hide add/delete item buttons on stock (staff can only restock + view)
     const addBtn = document.getElementById('addItemBtn');
     if (addBtn) addBtn.style.display = 'none';
-    // Staff CAN make sales — FAB and new sale button stay visible
+
+    // Staff DOES see dashboard (today sales, stock count, debt) + target progress
+    // Staff CAN make sales — FAB stays visible
   } else {
+    // Owner sees everything
     document.getElementById('settingsNav').style.display = '';
-    document.getElementById('ownerTarget') && (document.getElementById('ownerTarget').style.display = '');
+    const targetEditBtn = document.getElementById('ownerTarget');
+    if (targetEditBtn) targetEditBtn.style.display = '';
   }
 
   initFirebase();
@@ -2483,6 +2612,250 @@ function saveRestock() {
   if (_cloudShopId) cloudSaveItem(item);
 }
 
+
+// ══ SALES REPORT ══
+let _reportPeriod = 'today';
+
+function setReportPeriod(period, btn) {
+  _reportPeriod = period;
+  document.querySelectorAll('#salesReportCard .period-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const staffPeriod = document.getElementById('staffReportPeriod');
+  if (staffPeriod) staffPeriod.textContent = period.charAt(0).toUpperCase() + period.slice(1);
+  renderSalesReport();
+}
+
+function filterByPeriod(sales, period) {
+  const now = new Date();
+  const todayStr2 = now.toISOString().split('T')[0];
+  const weekAgo = new Date(now - 7 * 86400000).toISOString().split('T')[0];
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  return sales.filter(s => {
+    if (period === 'today') return s.date === todayStr2;
+    if (period === 'week') return s.date >= weekAgo;
+    if (period === 'month') return s.date >= monthStart;
+    return true;
+  });
+}
+
+function renderSalesReport() {
+  const el = document.getElementById('salesReportBody');
+  if (!el) return;
+  const filtered = filterByPeriod(DB.sales, _reportPeriod);
+  if (!filtered.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">No sales in this period</div>';
+    renderStaffReport(filtered);
+    return;
+  }
+
+  // Aggregate by product
+  const byProduct = {};
+  filtered.forEach(s => {
+    const key = s.productName || 'Unknown';
+    if (!byProduct[key]) byProduct[key] = { name: key, qty: 0, revenue: 0, count: 0 };
+    byProduct[key].qty += s.qty || 1;
+    byProduct[key].revenue += s.total || 0;
+    byProduct[key].count++;
+  });
+
+  const products = Object.values(byProduct).sort((a, b) => b.revenue - a.revenue);
+  const totalRevenue = filtered.reduce((s, x) => s + (x.total || 0), 0);
+  const totalQty = filtered.reduce((s, x) => s + (x.qty || 1), 0);
+  const cashSales = filtered.filter(s => s.type === 'cash').reduce((s, x) => s + (x.total || 0), 0);
+  const debtSales = filtered.filter(s => s.type !== 'cash').reduce((s, x) => s + (x.total || 0), 0);
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Revenue</div>
+        <div style="font-family:var(--font-display);color:var(--gold);font-size:16px;">KES ${fmt(totalRevenue)}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Cash</div>
+        <div style="font-family:var(--font-display);color:var(--green);font-size:16px;">KES ${fmt(cashSales)}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Credit</div>
+        <div style="font-family:var(--font-display);color:var(--red);font-size:16px;">KES ${fmt(debtSales)}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Top Items</div>
+    ${products.slice(0, 5).map((p, i) => {
+      const pct = Math.round((p.revenue / totalRevenue) * 100);
+      return `
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+            <span>${i+1}. <strong>${p.name}</strong> · ${p.qty} sold</span>
+            <span style="color:var(--gold);">KES ${fmt(p.revenue)}</span>
+          </div>
+          <div class="progress-track"><div class="progress-bar" style="width:${pct}%;"></div></div>
+        </div>
+      `;
+    }).join('')}
+    <div style="font-size:12px;color:var(--muted);text-align:right;margin-top:8px;">${filtered.length} transactions · ${totalQty} items sold</div>
+  `;
+  renderStaffReport(filtered);
+}
+
+// ══ STAFF REPORT ══
+function renderStaffReport(filteredSales) {
+  const el = document.getElementById('staffReportBody');
+  if (!el) return;
+  if (currentUser && currentUser.role !== 'owner') { el.closest('.card').style.display = 'none'; return; }
+  if (!filteredSales || !filteredSales.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px;">No staff sales in this period</div>';
+    return;
+  }
+
+  const byStaff = {};
+  filteredSales.forEach(s => {
+    const key = s.staffName || 'Unknown';
+    if (!byStaff[key]) byStaff[key] = { name: key, sales: 0, revenue: 0 };
+    byStaff[key].sales++;
+    byStaff[key].revenue += s.total || 0;
+  });
+
+  const staff = Object.values(byStaff).sort((a, b) => b.revenue - a.revenue);
+  const topRevenue = staff[0]?.revenue || 1;
+
+  el.innerHTML = staff.map((s, i) => {
+    const pct = Math.round((s.revenue / topRevenue) * 100);
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+          <span>${medal} <strong>${s.name}</strong> · ${s.sales} sale${s.sales !== 1 ? 's' : ''}</span>
+          <span style="color:var(--green);">KES ${fmt(s.revenue)}</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:${pct}%;background:linear-gradient(90deg,var(--blue),var(--green));"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ══ UPDATE RENDERDASHBOARD TO CALL REPORTS ══
+const _origRenderDashboard = renderDashboard;
+renderDashboard = function() {
+  _origRenderDashboard();
+  renderSalesReport();
+};
+
+// ══ UPDATE RENDERSTOCK WITH SEARCH ══
+const _origRenderStock = renderStock;
+renderStock = function() {
+  const searchEl = document.getElementById('stockSearch');
+  const query = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  const el = document.getElementById('stockList');
+
+  let items = DB.stock;
+  if (query) items = items.filter(s =>
+    s.name.toLowerCase().includes(query) ||
+    (s.category || '').toLowerCase().includes(query)
+  );
+
+  if (!items.length) {
+    el.innerHTML = query
+      ? `<div class="empty-state"><div class="empty-icon">🔍</div><p>No items match "${query}"</p></div>`
+      : `<div class="empty-state"><div class="empty-icon">📦</div><p>No stock items yet.<br>Tap + New Item to start.</p></div>`;
+    return;
+  }
+
+  const isOwner = currentUser && currentUser.role === 'owner';
+  el.innerHTML = items.map(item => {
+    const stockClass = item.qty === 0 ? 'low-stock' : item.qty <= (item.alertQty || 5) ? 'low-stock' : 'ok-stock';
+    return `
+    <div class="card" style="padding:14px;">
+      <div class="item-row" style="padding:0;border:none;">
+        <div class="item-color" style="background:${item.color || '#333'}">${item.icon || '📦'}</div>
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-meta">KES ${fmt(item.price)} · Cost: KES ${fmt(item.cost)}</div>
+          ${item.qty <= (item.alertQty || 5) && item.qty > 0 ? '<div style="font-size:11px;color:var(--red);">⚠️ Low stock</div>' : ''}
+          ${item.qty === 0 ? '<div style="font-size:11px;color:var(--red);">🚫 Out of stock</div>' : ''}
+        </div>
+        <div class="item-stock">
+          <div class="stock-num ${stockClass}">${item.qty}</div>
+          <div style="font-size:10px;color:var(--muted);">units</div>
+        </div>
+      </div>
+      ${isOwner ? `
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-outline btn-sm" onclick="openStockModal('${item.id}')">✏️ Edit</button>
+        <button class="btn btn-red btn-sm" onclick="deleteStock('${item.id}')">🗑</button>
+        <button class="btn btn-green btn-sm" onclick="openRestockModal('${item.id}')">+ Restock</button>
+      </div>` : `
+      <div style="margin-top:8px;">
+        <button class="btn btn-outline btn-sm" onclick="openRestockModal('${item.id}')">+ Restock</button>
+      </div>`}
+    </div>`;
+  }).join('');
+};
+
+// ══ UPDATE RENDERSALES WITH SEARCH + FILTER ══
+const _origRenderSales = renderSales;
+renderSales = function() {
+  const searchEl = document.getElementById('salesSearch');
+  const filterEl = document.getElementById('salesPeriodFilter');
+  const query = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  const period = filterEl ? filterEl.value : 'all';
+  const el = document.getElementById('salesList');
+
+  let sales = [...DB.sales].reverse();
+
+  // Period filter
+  sales = filterByPeriod(sales, period);
+
+  // Search filter
+  if (query) {
+    sales = sales.filter(s =>
+      (s.productName || '').toLowerCase().includes(query) ||
+      (s.customerName || '').toLowerCase().includes(query) ||
+      (s.staffName || '').toLowerCase().includes(query) ||
+      (s.notes || '').toLowerCase().includes(query)
+    );
+  }
+
+  // Update summary bar
+  const countEl = document.getElementById('salesCount');
+  const totalEl = document.getElementById('salesFilterTotal');
+  if (countEl) countEl.textContent = sales.length + ' sale' + (sales.length !== 1 ? 's' : '');
+  if (totalEl) totalEl.textContent = 'KES ' + fmt(sales.reduce((s, x) => s + (x.total || 0), 0));
+
+  if (!sales.length) {
+    el.innerHTML = query
+      ? `<div class="empty-state"><div class="empty-icon">🔍</div><p>No sales match "${query}"</p></div>`
+      : `<div class="empty-state"><div class="empty-icon">💰</div><p>No sales in this period.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = sales.map(s => `
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div>
+          <div style="font-weight:700;font-size:15px;">${s.productName || s.customerName || 'Sale'}</div>
+          <div style="font-size:12px;color:var(--muted);">${s.date} · ${s.staffName || 'Staff'} · ×${s.qty || 1}</div>
+          ${s.customerName && s.customerName !== 'Walk-in' ? `<div style="font-size:12px;color:var(--blue);">👤 ${s.customerName}</div>` : ''}
+          ${s.notes ? `<div style="font-size:11px;color:var(--muted);">${s.notes}</div>` : ''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-display);font-size:20px;color:var(--gold);">KES ${fmt(s.total)}</div>
+          <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:4px;">
+            <div class="badge badge-${s.type === 'cash' ? 'cash' : s.type === 'debt' ? 'debt' : 'partial'}">${(s.type||'cash').toUpperCase()}</div>
+            <button onclick="deleteSale('${s.id}')" style="background:rgba(255,71,87,.15);border:1px solid rgba(255,71,87,.3);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+};
+
+// ══ INIT REPORT ON APP LOAD ══
+const _origRenderAll = renderAll;
+renderAll = function() {
+  _origRenderAll();
+  renderSalesReport();
+};
+
 // ══ EDIT DEBTOR ══
 function editDebtor(id) {
   const d = DB.debts.find(x => x.id === id);
@@ -2749,6 +3122,54 @@ renderSettings = function() {
   _origRenderSettings();
   renderSubscriptionCard();
 };
+
+
+// ══ BACK BUTTON HANDLER ══
+let _lastBackPress = 0;
+
+document.addEventListener('backbutton', function(e) {
+  e.preventDefault();
+  handleBackButton();
+}, false);
+
+window.addEventListener('popstate', function(e) {
+  handleBackButton();
+});
+
+// Push a state so popstate fires on back press
+history.pushState({ page: 'app' }, '', '');
+
+function handleBackButton() {
+  // If a modal is open, close it instead of exiting
+  const openModal = document.querySelector('.modal-overlay.open');
+  if (openModal) {
+    openModal.classList.remove('open');
+    return;
+  }
+
+  // If not on dashboard, go to dashboard
+  const activeTab = document.querySelector('.tab-content.active');
+  if (activeTab && activeTab.id !== 'tab-dashboard') {
+    showTab('dashboard', document.querySelector('.nav-item'));
+    history.pushState({ page: 'app' }, '', '');
+    return;
+  }
+
+  // On dashboard — ask to exit
+  const now = Date.now();
+  if (now - _lastBackPress < 2000) {
+    // Second press within 2 seconds — exit
+    if (typeof navigator.app !== 'undefined') {
+      navigator.app.exitApp();
+    } else {
+      window.close();
+    }
+  } else {
+    _lastBackPress = now;
+    showToast('Press back again to exit', 'info');
+    history.pushState({ page: 'app' }, '', '');
+  }
+}
 
 </script>
 </body>
