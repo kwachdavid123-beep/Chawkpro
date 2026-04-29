@@ -534,8 +534,8 @@
     <!-- LOGIN -->
     <div id="authLoginPanel" class="auth-panel active">
       <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" id="cloudEmail" class="form-input" placeholder="your@email.com" autocomplete="email" inputmode="email">
+        <label class="form-label">Email or Phone Number</label>
+        <input type="text" id="cloudEmail" class="form-input" placeholder="email@example.com or 07xxxxxxxx" autocomplete="username" inputmode="email">
       </div>
       <div class="form-group">
         <label class="form-label">Password</label>
@@ -557,8 +557,9 @@
         <input type="text" id="regShopName" class="form-input" placeholder="e.g. Mama Njeri Store">
       </div>
       <div class="form-group">
-        <label class="form-label">Your Email</label>
-        <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" autocomplete="email" inputmode="email">
+        <label class="form-label">Email or Phone Number</label>
+        <input type="text" id="regEmail" class="form-input" placeholder="email@example.com or 07xxxxxxxx" autocomplete="username">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">If phone, we'll create an email like 07xx@chawkpro.app</div>
       </div>
       <div class="form-group">
         <label class="form-label">Password</label>
@@ -729,6 +730,17 @@
           </div>
         </div>
         <div id="salesReportBody"></div>
+      </div>
+
+      <!-- PROFIT TREND CHART -->
+      <div class="card" id="profitTrendCard">
+        <div class="card-header">
+          <div class="card-title">7-Day Profit Trend</div>
+          <span style="font-size:11px;color:var(--muted);">Revenue vs Expenses</span>
+        </div>
+        <div class="chart-wrap" style="height:140px;">
+          <canvas id="profitTrendChart"></canvas>
+        </div>
       </div>
 
       <!-- STAFF REPORT CARD (owner only) -->
@@ -917,9 +929,57 @@
         </div>
       </div>
 
+      <!-- APP PREFERENCES -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Preferences</div></div>
+        <div class="form-group">
+          <label class="form-label">Currency</label>
+          <select class="form-input" id="currencySelect" onchange="setSetting('currency',this.value);renderDashboard();">
+            <option value="KES">KES — Kenyan Shilling</option>
+            <option value="UGX">UGX — Ugandan Shilling</option>
+            <option value="TZS">TZS — Tanzanian Shilling</option>
+            <option value="USD">USD — US Dollar</option>
+            <option value="GBP">GBP — British Pound</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Max Debt Per Customer (${getSetting('currency','KES')})</label>
+          <input type="number" class="form-input" id="defaultMaxDebtInput" placeholder="5000"
+            value="${getSetting('defaultMaxDebt',5000)}"
+            onchange="setSetting('defaultMaxDebt',parseFloat(this.value)||5000);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PIN Lock After (minutes)</label>
+          <select class="form-input" id="pinLockSelect" onchange="setSetting('pinLockMinutes',parseInt(this.value));resetPinLockTimer();">
+            <option value="0">Never</option>
+            <option value="1">1 minute</option>
+            <option value="5" selected>5 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="30">30 minutes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Daily Summary WhatsApp Number</label>
+          <input type="tel" class="form-input" id="dailySummaryPhone" placeholder="07xxxxxxxx"
+            value="${getSetting('dailySummaryPhone','')}"
+            onchange="setSetting('dailySummaryPhone',this.value.trim());">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Receive daily sales summary on WhatsApp</div>
+        </div>
+        <button class="btn btn-green btn-full" style="margin-top:4px;" onclick="sendDailySummary()">📊 Send Daily Summary Now</button>
+      </div>
+
+      <!-- CUSTOMER CREDIT LIMITS -->
+      <div class="card" id="ownerCreditCard">
+        <div class="card-header">
+          <div class="card-title">Customer Credit Limits</div>
+          <button class="btn btn-gold btn-sm" onclick="openCustomerModal()">+ Add</button>
+        </div>
+        <div id="customerCreditList"></div>
+      </div>
+
       <div class="card">
         <div class="card-header"><div class="card-title">App Info</div></div>
-        <p style="font-size:13px;color:var(--muted);">CHAWKPRO TRACKER v1.0<br>Premium Sales Management</p>
+        <p style="font-size:13px;color:var(--muted);">CHAWKPRO TRACKER v2.0<br>Premium Sales Management</p>
         <div style="display:flex;gap:8px;margin-top:14px;">
           <button class="btn btn-outline btn-full" onclick="switchAccount()">🔄 Switch Account</button>
           <button class="btn btn-red btn-full" onclick="showLogoutConfirm()">🚪 Log Out</button>
@@ -1147,6 +1207,90 @@
   </div>
 </div>
 
+
+<!-- CUSTOMER MODAL -->
+<div id="customerModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">CUSTOMER CREDIT</div>
+    <input type="hidden" id="editCustomerId">
+    <div class="form-group">
+      <label class="form-label">Customer Name</label>
+      <input type="text" class="form-input" id="customerName" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input type="tel" class="form-input" id="customerPhone" placeholder="07xxxxxxxx">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Max Debt Allowed (KES)</label>
+      <input type="number" class="form-input" id="customerMaxDebt" placeholder="e.g. 5000">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Leave 0 to use default shop limit</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('customerModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveCustomer()" style="flex:2;">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN LOCK SCREEN -->
+<div id="pinLockScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9990;
+  flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+  <div style="font-family:var(--font-display);font-size:28px;color:var(--gold);margin-bottom:8px;">LOCKED</div>
+  <div style="color:var(--muted);font-size:14px;margin-bottom:32px;">Enter your PIN to continue</div>
+  <div style="display:flex;gap:12px;justify-content:center;margin-bottom:24px;" id="lockPinDots">
+    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--border);" id="ld0"></div>
+    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--border);" id="ld1"></div>
+    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--border);" id="ld2"></div>
+    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--border);" id="ld3"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;width:100%;">
+    ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k => `
+      <div onclick="lockPinPress('${k}')" style="background:var(--surface);border:1px solid var(--border);
+        border-radius:12px;padding:16px;text-align:center;font-size:20px;font-weight:600;
+        cursor:pointer;color:var(--text);">${k}</div>
+    `).join('')}
+  </div>
+  <div id="lockPinError" style="color:var(--red);font-size:13px;margin-top:16px;min-height:18px;"></div>
+</div>
+
+<!-- ONBOARDING MODAL -->
+<div id="onboardingModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:10px 0 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">👋</div>
+      <div style="font-family:var(--font-display);font-size:28px;color:var(--gold);margin-bottom:8px;">Welcome to CHAWKPRO!</div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:24px;">Your premium shop management app. Here is a quick guide to get started:</div>
+      <div style="text-align:left;">
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">
+          <div style="font-size:24px;">📦</div>
+          <div><div style="font-weight:700;">Add Your Stock First</div><div style="font-size:13px;color:var(--muted);">Go to Stock tab → + New Item → add your products with cost and selling price</div></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">
+          <div style="font-size:24px;">💰</div>
+          <div><div style="font-weight:700;">Record Sales</div><div style="font-size:13px;color:var(--muted);">Tap the gold + button → tap items to add → choose cash, debt or partial payment</div></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">
+          <div style="font-size:24px;">📋</div>
+          <div><div style="font-weight:700;">Track Debts</div><div style="font-size:13px;color:var(--muted);">Debt tab shows all customers who owe you — tap to record payments</div></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">
+          <div style="font-size:24px;">💸</div>
+          <div><div style="font-weight:700;">Record Expenses</div><div style="font-size:13px;color:var(--muted);">Dashboard → Expenses card → tap + Add to record rent, transport etc</div></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">
+          <div style="font-size:24px;">👥</div>
+          <div><div style="font-weight:700;">Add Staff</div><div style="font-size:13px;color:var(--muted);">Settings → Users → Add Staff with email and password for them to log in on their phone</div></div>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="finishOnboarding()">Let's Go! 🚀</button>
+    </div>
+  </div>
+</div>
+
 <!-- EXPENSE MODAL -->
 <div id="expenseModal" class="modal-overlay">
   <div class="modal">
@@ -1355,9 +1499,29 @@ function defaultData() {
     sales: [],
     debts: [],
     expenses: [],
+    customers: [],
     target: { amount: 0, period: 'monthly' },
-    selectedColor: '#e53935'
+    selectedColor: '#e53935',
+    settings: {
+      currency: 'KES',
+      defaultMaxDebt: 5000,
+      pinLockMinutes: 5,
+      receiptCounter: 1,
+      onboardingDone: false,
+      dailySummaryPhone: ''
+    }
   };
+}
+
+// ── SETTINGS HELPERS ──
+function getSetting(key, fallback) {
+  if (!DB.settings) DB.settings = {};
+  return DB.settings[key] !== undefined ? DB.settings[key] : fallback;
+}
+function setSetting(key, val) {
+  if (!DB.settings) DB.settings = {};
+  DB.settings[key] = val;
+  save();
 }
 
 let DB = loadWithFallback();
@@ -2442,6 +2606,363 @@ function enterCloudApp(role, name) {
 
 
 
+
+// ══════════════════════════════════════════════════════
+// RECEIPT NUMBER DISPLAY IN SALES LIST
+// ══════════════════════════════════════════════════════
+// Already added to sale object above
+
+// ══════════════════════════════════════════════════════
+// PROFIT TREND CHART
+// ══════════════════════════════════════════════════════
+let _trendChart = null;
+
+function renderProfitTrend() {
+  const canvas = document.getElementById('profitTrendChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  // Get last 7 days
+  const days = [];
+  const revenues = [];
+  const expensesArr = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const dayLabel = d.toLocaleDateString('en', {weekday:'short'});
+    days.push(dayLabel);
+    const dayRevenue = DB.sales.filter(s => s.date === ds).reduce((s, x) => s + (x.total || 0), 0);
+    const dayExpense = (DB.expenses || []).filter(e => e.date === ds).reduce((s, e) => s + (e.amount || 0), 0);
+    revenues.push(dayRevenue);
+    expensesArr.push(dayExpense);
+  }
+
+  if (_trendChart) _trendChart.destroy();
+
+  _trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [
+        {
+          label: 'Revenue',
+          data: revenues,
+          borderColor: '#f5c518',
+          backgroundColor: 'rgba(245,197,24,0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#f5c518'
+        },
+        {
+          label: 'Expenses',
+          data: expensesArr,
+          borderColor: '#ff4757',
+          backgroundColor: 'rgba(255,71,87,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#ff4757'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#7a7a9a', font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: '#7a7a9a', font: { size: 10 } }, grid: { color: '#2a2a3d' } },
+        y: { ticks: { color: '#7a7a9a', font: { size: 10 }, callback: v => fmt(v) }, grid: { color: '#2a2a3d' } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// PIN LOCK SYSTEM
+// ══════════════════════════════════════════════════════
+let _pinLockTimer = null;
+let _lockPinBuffer = '';
+
+function resetPinLockTimer() {
+  clearTimeout(_pinLockTimer);
+  const mins = getSetting('pinLockMinutes', 5);
+  if (!mins || !currentUser) return;
+  _pinLockTimer = setTimeout(lockApp, mins * 60 * 1000);
+}
+
+function lockApp() {
+  const screen = document.getElementById('pinLockScreen');
+  if (!screen || !currentUser) return;
+  _lockPinBuffer = '';
+  updateLockDots();
+  screen.style.display = 'flex';
+  document.getElementById('lockPinError').textContent = '';
+}
+
+function lockPinPress(key) {
+  if (key === '⌫') {
+    _lockPinBuffer = _lockPinBuffer.slice(0, -1);
+  } else if (key !== '' && _lockPinBuffer.length < 6) {
+    _lockPinBuffer += key;
+    if (_lockPinBuffer.length >= 4) {
+      setTimeout(() => verifyLockPin(), 100);
+    }
+  }
+  updateLockDots();
+}
+
+function updateLockDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('ld' + i);
+    if (!dot) continue;
+    dot.style.background = i < _lockPinBuffer.length ? '#f5c518' : 'transparent';
+    dot.style.borderColor = i < _lockPinBuffer.length ? '#f5c518' : '#2a2a3d';
+  }
+}
+
+function verifyLockPin() {
+  const user = currentUser;
+  const storedPin = user?.pin || '';
+  if (_lockPinBuffer === storedPin || hashPin(_lockPinBuffer) === storedPin) {
+    document.getElementById('pinLockScreen').style.display = 'none';
+    _lockPinBuffer = '';
+    resetPinLockTimer();
+    document.getElementById('lockPinError').textContent = '';
+  } else {
+    document.getElementById('lockPinError').textContent = 'Wrong PIN. Try again.';
+    _lockPinBuffer = '';
+    updateLockDots();
+  }
+}
+
+// Reset timer on any user activity
+['touchstart','click','keydown'].forEach(ev => {
+  document.addEventListener(ev, () => { if(currentUser) resetPinLockTimer(); }, {passive:true});
+});
+
+// ══════════════════════════════════════════════════════
+// ONBOARDING TOUR
+// ══════════════════════════════════════════════════════
+function checkOnboarding() {
+  if (!getSetting('onboardingDone', false)) {
+    setTimeout(() => openModal('onboardingModal'), 800);
+  }
+}
+
+function finishOnboarding() {
+  setSetting('onboardingDone', true);
+  closeModal('onboardingModal');
+}
+
+// ══════════════════════════════════════════════════════
+// DAILY SUMMARY via WhatsApp
+// ══════════════════════════════════════════════════════
+function sendDailySummary() {
+  const phone = getSetting('dailySummaryPhone', '');
+  const shopName = DB.shop?.name || 'My Shop';
+  const today = todayStr();
+  
+  const todaySalesAmt = DB.sales.filter(s => s.date === today).reduce((s, x) => s + (x.total || 0), 0);
+  const todayExpAmt = (DB.expenses || []).filter(e => e.date === today).reduce((s, e) => s + (e.amount || 0), 0);
+  const todayCost = DB.sales.filter(s => s.date === today).reduce((s, x) => s + (x.costAtSale || 0), 0);
+  const todayProfit = todaySalesAmt - todayCost - todayExpAmt;
+  const totalDebt = DB.debts.reduce((s, d) => s + (d.balance || 0), 0);
+  const lowStock = DB.stock.filter(s => s.qty <= (s.alertQty || 5));
+  
+  const msg = 
+    `📊 *${shopName} — Daily Summary*
+` +
+    `📅 ${today}
+
+` +
+    `💰 Sales: KES ${fmt(todaySalesAmt)}
+` +
+    `💸 Expenses: KES ${fmt(todayExpAmt)}
+` +
+    `📈 Profit: KES ${fmt(todayProfit)}
+` +
+    `📋 Total Debt: KES ${fmt(totalDebt)}
+` +
+    (lowStock.length ? `⚠️ Low Stock: ${lowStock.map(s=>s.name).join(', ')}
+` : '') +
+    `
+_Sent from CHAWKPRO TRACKER_`;
+
+  const target = phone || '';
+  if (target) {
+    const cleaned = target.replace(/^0/, '254').replace(/\s/g, '');
+    window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(msg)}`, '_blank');
+  } else {
+    // Share/copy
+    if (navigator.share) {
+      navigator.share({ title: 'Daily Summary', text: msg });
+    } else {
+      navigator.clipboard.writeText(msg).then(() => showToast('Summary copied!', 'success'));
+    }
+  }
+}
+
+// Auto-send daily summary at 8PM if phone is set
+function checkDailySummaryTime() {
+  const now = new Date();
+  if (now.getHours() === 20 && now.getMinutes() === 0) {
+    const phone = getSetting('dailySummaryPhone', '');
+    const lastSent = localStorage.getItem('chawkpro_last_summary');
+    if (phone && lastSent !== todayStr()) {
+      localStorage.setItem('chawkpro_last_summary', todayStr());
+      sendDailySummary();
+    }
+  }
+}
+setInterval(checkDailySummaryTime, 60000);
+
+// ══════════════════════════════════════════════════════
+// CUSTOMER CREDIT MANAGEMENT
+// ══════════════════════════════════════════════════════
+function openCustomerModal(editId = null) {
+  document.getElementById('editCustomerId').value = editId || '';
+  document.getElementById('customerName').value = '';
+  document.getElementById('customerPhone').value = '';
+  document.getElementById('customerMaxDebt').value = getSetting('defaultMaxDebt', 5000);
+  if (editId) {
+    const c = (DB.customers || []).find(x => x.id === editId);
+    if (c) {
+      document.getElementById('customerName').value = c.name || '';
+      document.getElementById('customerPhone').value = c.phone || '';
+      document.getElementById('customerMaxDebt').value = c.maxDebt || 0;
+    }
+  }
+  openModal('customerModal');
+}
+
+function saveCustomer() {
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const maxDebt = parseFloat(document.getElementById('customerMaxDebt').value) || 0;
+  const editId = document.getElementById('editCustomerId').value;
+
+  if (!name) { showToast('Customer name required', 'error'); return; }
+
+  if (!DB.customers) DB.customers = [];
+
+  if (editId) {
+    const c = DB.customers.find(x => x.id === editId);
+    if (c) { c.name = name; c.phone = phone; c.maxDebt = maxDebt; }
+  } else {
+    DB.customers.push({ id: uid(), name, phone, maxDebt, createdAt: todayStr() });
+  }
+
+  save();
+  closeModal('customerModal');
+  renderCustomerCreditList();
+  showToast('Customer saved ✓', 'success');
+
+  if (_cloudShopId) {
+    const c = DB.customers.find(x => x.name === name);
+    if (c) _db.collection('shops').doc(_cloudShopId).collection('customers').doc(c.id)
+      .set(c).catch(() => {});
+  }
+}
+
+function renderCustomerCreditList() {
+  const el = document.getElementById('customerCreditList');
+  if (!el) return;
+  const customers = DB.customers || [];
+  if (!customers.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px;">No customers added yet</div>';
+    return;
+  }
+  el.innerHTML = customers.map(c => {
+    const debt = DB.debts.filter(d => d.customer?.toLowerCase() === c.name.toLowerCase())
+      .reduce((s, d) => s + (d.balance || 0), 0);
+    const pct = c.maxDebt > 0 ? Math.min(100, Math.round((debt / c.maxDebt) * 100)) : 0;
+    const color = pct >= 90 ? 'var(--red)' : pct >= 60 ? 'var(--gold)' : 'var(--green)';
+    return `
+      <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div>
+            <div style="font-weight:600;font-size:14px;">${c.name}</div>
+            <div style="font-size:11px;color:var(--muted);">${c.phone || 'No phone'} · Limit: KES ${fmt(c.maxDebt || getSetting('defaultMaxDebt',5000))}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px;color:${color};font-weight:700;">KES ${fmt(debt)}</div>
+            <button onclick="openCustomerModal('${c.id}')" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;">✏️ Edit</button>
+          </div>
+        </div>
+        ${c.maxDebt > 0 ? `
+        <div class="progress-track">
+          <div class="progress-bar" style="width:${pct}%;background:${color};"></div>
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// PASSWORD RESET — Contact Owner for phone users
+// ══════════════════════════════════════════════════════
+function handleForgotPasswordEnhanced() {
+  const rawInput = document.getElementById('cloudEmail').value.trim();
+  if (!rawInput) { showToast('Enter your email or phone first', 'error'); return; }
+  const isPhone = /^[0-9+]/.test(rawInput) && !rawInput.includes('@');
+  if (isPhone) {
+    // Phone users — show contact owner message
+    showToast('Contact your shop owner to reset your password', 'info');
+    setTimeout(() => {
+      alert('To reset your password:\n1. Contact your shop owner\n2. Owner logs into Firebase Console\n3. Goes to Authentication > Users\n4. Finds your account and resets password');
+    }, 300);
+  } else {
+    // Email users — Firebase reset
+    _auth.sendPasswordResetEmail(rawInput)
+      .then(() => showToast('Reset email sent! Check your inbox', 'success'))
+      .catch(() => showToast('Email not found', 'error'));
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// HOOK INTO RENDERDASHBOARD + RENDERSETTINGS
+// ══════════════════════════════════════════════════════
+const _origRenderSettings2 = renderSettings;
+renderSettings = function() {
+  _origRenderSettings2();
+  renderCustomerCreditList();
+  renderSubscriptionCard();
+  // Set currency select value
+  const currEl = document.getElementById('currencySelect');
+  if (currEl) currEl.value = getSetting('currency', 'KES');
+  const pinEl = document.getElementById('pinLockSelect');
+  if (pinEl) pinEl.value = getSetting('pinLockMinutes', 5);
+};
+
+// Override renderDashboard to also render trend chart
+const _origRenderDB = renderDashboard;
+renderDashboard = function() {
+  _origRenderDB();
+  setTimeout(renderProfitTrend, 100);
+};
+
+// ══════════════════════════════════════════════════════
+// HOOK enterCloudApp to start all new features
+// ══════════════════════════════════════════════════════
+const _origEnterCloud = enterCloudApp;
+enterCloudApp = function(role, name) {
+  _origEnterCloud(role, name);
+  resetPinLockTimer();
+  checkOnboarding();
+  // Load Chart.js if not loaded
+  if (typeof Chart === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+    s.onload = () => setTimeout(renderProfitTrend, 500);
+    document.head.appendChild(s);
+  } else {
+    setTimeout(renderProfitTrend, 500);
+  }
+};
+
 // ══ MULTI-ITEM SALE FUNCTIONS ══
 let saleItems = [];
 
@@ -2586,6 +3107,8 @@ function saveSale() {
   const customerName = document.getElementById('saleCustomerName').value.trim() || 'Walk-in';
   const customerPhone = document.getElementById('saleCustomerPhone').value.trim();
   const sendSms = document.getElementById('sendSmsReceipt').checked;
+  const receiptNo = getSetting('receiptCounter', 1);
+  setSetting('receiptCounter', receiptNo + 1);
   const saleId = uid();
 
   // Create sale records & deduct stock
@@ -2605,6 +3128,22 @@ function saveSale() {
     DB.sales.push(sale);
     salesCreated.push(sale);
     if (_cloudShopId) cloudSaveSale(sale);
+  }
+
+  // Check customer credit limit
+  if (type !== 'cash') {
+    const custName = customerName.toLowerCase().trim();
+    const existingDebt = DB.debts
+      .filter(d => d.customer && d.customer.toLowerCase().trim() === custName)
+      .reduce((s, d) => s + (d.balance || 0), 0);
+    const customer = (DB.customers || []).find(c => c.name.toLowerCase().trim() === custName);
+    const maxDebt = customer?.maxDebt || getSetting('defaultMaxDebt', 5000);
+    const paid = parseFloat(document.getElementById('debtPaid').value) || 0;
+    const newBalance = Math.max(0, grandTotal - paid);
+    if (existingDebt + newBalance > maxDebt && maxDebt > 0) {
+      showToast(`Credit limit exceeded! ${customerName} owes KES ${fmt(existingDebt)} (Limit: KES ${fmt(maxDebt)})`, 'error');
+      return;
+    }
   }
 
   // Handle debt/partial
