@@ -900,7 +900,11 @@
       <div class="card">
         <div class="card-header"><div class="card-title">App Info</div></div>
         <p style="font-size:13px;color:var(--muted);">CHAWKPRO TRACKER v1.0<br>Premium Sales Management</p>
-        <button class="btn btn-red btn-full" style="margin-top:14px;" onclick="showLogoutConfirm()">🚪 Log Out</button>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="btn btn-outline btn-full" onclick="switchAccount()">🔄 Switch Account</button>
+          <button class="btn btn-red btn-full" onclick="showLogoutConfirm()">🚪 Log Out</button>
+        </div>
+        <button class="btn btn-red btn-full" style="margin-top:8px;background:rgba(255,71,87,0.05);" onclick="confirmDeleteAccount()">🗑 Delete Shop & All Data</button>
       </div>
     </div>
 
@@ -1089,6 +1093,45 @@
 </div>
 
 
+
+<!-- EXPENSE MODAL -->
+<div id="expenseModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ADD EXPENSE</div>
+    <input type="hidden" id="editExpenseId">
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;" id="expenseCategoryBtns">
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Rent')">🏠 Rent</button>
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Electricity')">💡 Electricity</button>
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Transport')">🚗 Transport</button>
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Airtime')">📱 Airtime</button>
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Supplier')">📦 Supplier</button>
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Salary')">👤 Salary</button>
+        <button class="btn btn-outline btn-sm" onclick="selectExpenseCategory(this,'Other')">➕ Other</button>
+      </div>
+      <input type="text" class="form-input" id="expenseCategory" placeholder="Or type custom category">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount (KES)</label>
+      <input type="number" class="form-input" id="expenseAmount" placeholder="0" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input type="text" class="form-input" id="expenseDesc" placeholder="What was it for?">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input type="date" class="form-input" id="expenseDate">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeModal('expenseModal')" style="flex:1;">Cancel</button>
+      <button class="btn btn-gold" onclick="saveExpense()" style="flex:2;">Save Expense ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT DEBT MODAL -->
 <div id="editDebtModal" class="modal-overlay">
   <div class="modal">
@@ -1258,6 +1301,7 @@ function defaultData() {
     stock: [],
     sales: [],
     debts: [],
+    expenses: [],
     target: { amount: 0, period: 'monthly' },
     selectedColor: '#e53935'
   };
@@ -1484,7 +1528,8 @@ function renderDashboard() {
   const totalDebt = DB.debts.reduce((a, d) => a + d.balance, 0);
   const totalRevenue = DB.sales.reduce((a, s) => a + s.total, 0);
   const totalCost = DB.sales.reduce((a, s) => a + (s.costAtSale || 0), 0);
-  const netProfit = totalRevenue - totalCost;
+  const todayExpTotal = (DB.expenses || []).filter(e => e.date === todayStr()).reduce((s, e) => s + (e.amount || 0), 0);
+  const netProfit = totalRevenue - totalCost - todayExpTotal;
 
   const stockCostValue = DB.stock.reduce((a, s) => a + ((s.cost || 0) * (s.qty || 0)), 0);
   const stockRetailValue = DB.stock.reduce((a, s) => a + ((s.price || 0) * (s.qty || 0)), 0);
@@ -2536,6 +2581,215 @@ function saveSale() {
 }
 
 
+
+// ══ EXPENSES ══
+const EXPENSE_CATEGORIES = {
+  'Rent': '🏠', 'Electricity': '💡', 'Transport': '🚗',
+  'Airtime': '📱', 'Supplier': '📦', 'Salary': '👤', 'Other': '➕'
+};
+
+function openExpenseModal(editId = null) {
+  document.getElementById('editExpenseId').value = editId || '';
+  document.getElementById('expenseCategory').value = '';
+  document.getElementById('expenseAmount').value = '';
+  document.getElementById('expenseDesc').value = '';
+  document.getElementById('expenseDate').value = todayStr();
+  document.querySelectorAll('#expenseCategoryBtns .btn').forEach(b => b.classList.remove('btn-gold'));
+  if (editId) {
+    const e = (DB.expenses || []).find(x => x.id === editId);
+    if (e) {
+      document.getElementById('expenseCategory').value = e.category || '';
+      document.getElementById('expenseAmount').value = e.amount || '';
+      document.getElementById('expenseDesc').value = e.desc || '';
+      document.getElementById('expenseDate').value = e.date || todayStr();
+    }
+  }
+  openModal('expenseModal');
+}
+
+function selectExpenseCategory(btn, cat) {
+  document.querySelectorAll('#expenseCategoryBtns .btn').forEach(b => {
+    b.classList.remove('btn-gold'); b.classList.add('btn-outline');
+  });
+  btn.classList.remove('btn-outline'); btn.classList.add('btn-gold');
+  document.getElementById('expenseCategory').value = cat;
+}
+
+function saveExpense() {
+  const category = document.getElementById('expenseCategory').value.trim();
+  const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+  const desc = document.getElementById('expenseDesc').value.trim();
+  const date = document.getElementById('expenseDate').value || todayStr();
+  const editId = document.getElementById('editExpenseId').value;
+
+  if (!category) { showToast('Select or enter a category', 'error'); return; }
+  if (amount <= 0) { showToast('Enter a valid amount', 'error'); return; }
+
+  if (!DB.expenses) DB.expenses = [];
+
+  if (editId) {
+    const e = DB.expenses.find(x => x.id === editId);
+    if (e) { e.category = category; e.amount = amount; e.desc = desc; e.date = date; }
+  } else {
+    const expense = {
+      id: uid(), category, amount, desc, date,
+      staffId: currentUser?.id, staffName: currentUser?.name || 'Staff',
+      createdAt: new Date().toISOString()
+    };
+    DB.expenses.push(expense);
+    // Sync to cloud
+    if (_cloudShopId) {
+      _db.collection('shops').doc(_cloudShopId).collection('expenses').doc(expense.id)
+        .set({ ...expense, serverTime: firebase.firestore.FieldValue.serverTimestamp() })
+        .catch(() => {});
+    }
+  }
+
+  save();
+  closeModal('expenseModal');
+  renderExpenses();
+  renderDashboard();
+  showToast('Expense saved ✓', 'success');
+}
+
+function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  DB.expenses = (DB.expenses || []).filter(e => e.id !== id);
+  save();
+  if (_cloudShopId) {
+    _db.collection('shops').doc(_cloudShopId).collection('expenses').doc(id).delete().catch(() => {});
+  }
+  renderExpenses();
+  renderDashboard();
+  showToast('Expense deleted', 'info');
+}
+
+function renderExpenses() {
+  if (!DB.expenses) DB.expenses = [];
+  const searchEl = document.getElementById('expenseSearch');
+  const filterEl = document.getElementById('expensePeriodFilter');
+  const query = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  const period = filterEl ? filterEl.value : 'month';
+
+  let expenses = [...DB.expenses].reverse();
+  expenses = filterByPeriod(expenses, period);
+  if (query) expenses = expenses.filter(e =>
+    (e.category || '').toLowerCase().includes(query) ||
+    (e.desc || '').toLowerCase().includes(query) ||
+    (e.staffName || '').toLowerCase().includes(query)
+  );
+
+  // Update summary
+  const todayTotal = DB.expenses.filter(e => e.date === todayStr()).reduce((s, e) => s + (e.amount || 0), 0);
+  const monthStart = new Date(); monthStart.setDate(1);
+  const monthStr = monthStart.toISOString().split('T')[0];
+  const monthTotal = DB.expenses.filter(e => e.date >= monthStr).reduce((s, e) => s + (e.amount || 0), 0);
+  const todayEl = document.getElementById('todayExpenses');
+  const monthEl = document.getElementById('monthExpenses');
+  if (todayEl) todayEl.textContent = 'KES ' + fmt(todayTotal);
+  if (monthEl) monthEl.textContent = 'KES ' + fmt(monthTotal);
+
+  const el = document.getElementById('expensesList');
+  if (!el) return;
+
+  if (!expenses.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">💸</div><p>No expenses recorded</p></div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  expenses.forEach(e => {
+    if (!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+
+  el.innerHTML = Object.entries(byDate).map(([date, items]) => {
+    const dayTotal = items.reduce((s, e) => s + (e.amount || 0), 0);
+    return `
+      <div style="margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:4px 2px;text-transform:uppercase;letter-spacing:1px;">
+          <span>${date === todayStr() ? 'Today' : date}</span>
+          <span style="color:var(--red);">−KES ${fmt(dayTotal)}</span>
+        </div>
+        ${items.map(e => {
+          const icon = EXPENSE_CATEGORIES[e.category] || '💸';
+          return `
+          <div class="expense-card">
+            <div style="display:flex;align-items:center;gap:12px;flex:1;">
+              <div class="expense-icon">${icon}</div>
+              <div>
+                <div style="font-weight:600;font-size:14px;">${e.category}</div>
+                <div style="font-size:12px;color:var(--muted);">${e.desc || ''}${e.staffName ? ' · ' + e.staffName : ''}</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:var(--font-display);font-size:18px;color:var(--red);">−${fmt(e.amount)}</div>
+              <div style="display:flex;gap:6px;margin-top:4px;justify-content:flex-end;">
+                <button onclick="openExpenseModal('${e.id}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--text);">✏️</button>
+                <button onclick="deleteExpense('${e.id}')" style="background:rgba(255,71,87,.15);border:1px solid rgba(255,71,87,.3);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">✕</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+// ══ SWITCH ACCOUNT ══
+function switchAccount() {
+  if (confirm('Switch to a different account? You will be logged out.')) {
+    cloudLogout();
+  }
+}
+
+// ══ DELETE ACCOUNT ══
+async function confirmDeleteAccount() {
+  if (_cloudRole !== 'owner') { showToast('Only owner can delete the shop', 'error'); return; }
+  const confirm1 = confirm('WARNING: This will permanently delete your shop and ALL data. This CANNOT be undone. Are you absolutely sure?');
+  if (!confirm1) return;
+  const confirm2 = prompt('Type DELETE to confirm:');
+  if (confirm2 !== 'DELETE') { showToast('Deletion cancelled', 'info'); return; }
+
+  showCloudLoader('Deleting shop data...');
+  try {
+    const collections = ['stock', 'sales', 'debts', 'expenses', 'staff'];
+    for (const col of collections) {
+      const snap = await _db.collection('shops').doc(_cloudShopId).collection(col).get();
+      const batch = _db.batch();
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+    await _db.collection('shops').doc(_cloudShopId).delete();
+    // Remove staff links
+    const staffSnap = await _db.collection('staffLinks').where('shopId', '==', _cloudShopId).get();
+    const batch2 = _db.batch();
+    staffSnap.docs.forEach(d => batch2.delete(d.ref));
+    await batch2.commit();
+    // Delete auth account
+    await _auth.currentUser.delete();
+    localStorage.clear();
+    hideCloudLoader();
+    alert('Shop deleted successfully.');
+    location.reload();
+  } catch(e) {
+    hideCloudLoader();
+    showToast('Delete failed: ' + (e.message || 'Try again'), 'error');
+  }
+}
+
+// ══ LOAD EXPENSES FROM CLOUD ══
+async function loadCloudExpenses() {
+  if (!_cloudShopId || !_db) return;
+  try {
+    const snap = await _db.collection('shops').doc(_cloudShopId).collection('expenses')
+      .orderBy('serverTime', 'desc').limit(500).get();
+    DB.expenses = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    save();
+  } catch(e) {}
+}
+
 // ══ SEND SMS RECEIPT ══
 function sendSmsReceipt() {
   const phone = document.getElementById('receiptPhone').value.trim();
@@ -3140,10 +3394,11 @@ window.addEventListener('popstate', function(e) {
 history.pushState({ page: 'app' }, '', '');
 
 function handleBackButton() {
-  // If a modal is open, close it instead of exiting
-  const openModal = document.querySelector('.modal-overlay.open');
-  if (openModal) {
-    openModal.classList.remove('open');
+  // If a modal is open, close it
+  const openModalEl = document.querySelector('.modal-overlay.open');
+  if (openModalEl) {
+    openModalEl.classList.remove('open');
+    history.pushState({ page: 'app' }, '', '');
     return;
   }
 
@@ -3155,19 +3410,44 @@ function handleBackButton() {
     return;
   }
 
-  // On dashboard — ask to exit
-  const now = Date.now();
-  if (now - _lastBackPress < 2000) {
-    // Second press within 2 seconds — exit
-    if (typeof navigator.app !== 'undefined') {
-      navigator.app.exitApp();
-    } else {
-      window.close();
-    }
+  // On dashboard — show exit confirmation dialog
+  showExitDialog();
+}
+
+function showExitDialog() {
+  let dlg = document.getElementById('exitDialog');
+  if (!dlg) {
+    dlg = document.createElement('div');
+    dlg.id = 'exitDialog';
+    dlg.style.cssText = `
+      position:fixed;inset:0;background:rgba(0,0,0,0.75);
+      z-index:9999;display:flex;align-items:center;justify-content:center;
+      padding:24px;backdrop-filter:blur(4px);
+    `;
+    dlg.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;
+        padding:28px 24px;max-width:320px;width:100%;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">👋</div>
+        <div style="font-family:var(--font-display);font-size:22px;color:var(--text);margin-bottom:8px;">Exit CHAWKPRO?</div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:24px;">Are you sure you want to exit the app?</div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('exitDialog').style.display='none';history.pushState({page:'app'},'','');"
+            class="btn btn-outline" style="flex:1;">Stay</button>
+          <button onclick="exitApp();" class="btn btn-gold" style="flex:1;">Exit</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(dlg);
+  }
+  dlg.style.display = 'flex';
+}
+
+function exitApp() {
+  if (typeof navigator.app !== 'undefined') {
+    navigator.app.exitApp();
   } else {
-    _lastBackPress = now;
-    showToast('Press back again to exit', 'info');
-    history.pushState({ page: 'app' }, '', '');
+    window.history.go(-(window.history.length - 1));
+    window.close();
   }
 }
 
