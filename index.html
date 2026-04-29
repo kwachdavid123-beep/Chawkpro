@@ -698,6 +698,26 @@
         </div>
       </div>
 
+      <!-- EXPENSES QUICK CARD -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Expenses</div>
+          <button class="btn btn-gold btn-sm" onclick="openExpenseModal()">+ Add</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Today</div>
+            <div style="font-family:var(--font-display);font-size:22px;color:var(--red);" id="todayExpenses">KES 0</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">This Month</div>
+            <div style="font-family:var(--font-display);font-size:22px;color:var(--red);" id="monthExpenses">KES 0</div>
+          </div>
+        </div>
+        <div id="expensesDashList"></div>
+        <button class="btn btn-outline btn-full" style="margin-top:10px;font-size:12px;" onclick="openAllExpensesModal()">View All Expenses →</button>
+      </div>
+
       <!-- SALES REPORT CARD -->
       <div class="card" id="salesReportCard">
         <div class="card-header">
@@ -1093,6 +1113,39 @@
 </div>
 
 
+
+
+<!-- ALL EXPENSES MODAL -->
+<div id="allExpensesModal" class="modal-overlay">
+  <div class="modal" style="max-height:90vh;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="modal-title" style="margin-bottom:0;">ALL EXPENSES</div>
+      <button class="btn btn-gold btn-sm" onclick="openExpenseModal()">+ Add</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Today</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--red);" id="todayExpensesModal">KES 0</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">This Month</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--red);" id="monthExpensesModal">KES 0</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="search" class="form-input" id="expenseSearch" placeholder="🔍 Search..." oninput="renderExpenses()" style="flex:1;">
+      <select class="form-input" id="expensePeriodFilter" onchange="renderExpenses()" style="flex:0 0 90px;font-size:12px;">
+        <option value="today">Today</option>
+        <option value="week">Week</option>
+        <option value="month" selected>Month</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+    <div id="expensesList" style="overflow-y:auto;max-height:400px;"></div>
+    <button class="btn btn-outline btn-full" style="margin-top:12px;" onclick="closeModal('allExpensesModal')">Close</button>
+  </div>
+</div>
 
 <!-- EXPENSE MODAL -->
 <div id="expenseModal" class="modal-overlay">
@@ -2588,6 +2641,12 @@ const EXPENSE_CATEGORIES = {
   'Airtime': '📱', 'Supplier': '📦', 'Salary': '👤', 'Other': '➕'
 };
 
+
+function openAllExpensesModal() {
+  renderExpenses();
+  openModal('allExpensesModal');
+}
+
 function openExpenseModal(editId = null) {
   document.getElementById('editExpenseId').value = editId || '';
   document.getElementById('expenseCategory').value = '';
@@ -2684,10 +2743,14 @@ function renderExpenses() {
   const monthStart = new Date(); monthStart.setDate(1);
   const monthStr = monthStart.toISOString().split('T')[0];
   const monthTotal = DB.expenses.filter(e => e.date >= monthStr).reduce((s, e) => s + (e.amount || 0), 0);
-  const todayEl = document.getElementById('todayExpenses');
-  const monthEl = document.getElementById('monthExpenses');
-  if (todayEl) todayEl.textContent = 'KES ' + fmt(todayTotal);
-  if (monthEl) monthEl.textContent = 'KES ' + fmt(monthTotal);
+  ['todayExpenses','todayExpensesModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'KES ' + fmt(todayTotal);
+  });
+  ['monthExpenses','monthExpensesModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'KES ' + fmt(monthTotal);
+  });
 
   const el = document.getElementById('expensesList');
   if (!el) return;
@@ -2703,6 +2766,29 @@ function renderExpenses() {
     if (!byDate[e.date]) byDate[e.date] = [];
     byDate[e.date].push(e);
   });
+
+  // Update dashboard quick list (last 3 expenses)
+  const dashEl = document.getElementById('expensesDashList');
+  if (dashEl) {
+    const recent = [...DB.expenses].reverse().slice(0, 3);
+    if (!recent.length) {
+      dashEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px;">No expenses yet</div>';
+    } else {
+      dashEl.innerHTML = recent.map(e => {
+        const icon = EXPENSE_CATEGORIES[e.category] || '💸';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:18px;">${icon}</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;">${e.category}</div>
+              <div style="font-size:11px;color:var(--muted);">${e.date === todayStr() ? 'Today' : e.date}</div>
+            </div>
+          </div>
+          <div style="font-family:var(--font-display);color:var(--red);">−${fmt(e.amount)}</div>
+        </div>`;
+      }).join('');
+    }
+  }
 
   el.innerHTML = Object.entries(byDate).map(([date, items]) => {
     const dayTotal = items.reduce((s, e) => s + (e.amount || 0), 0);
@@ -2992,6 +3078,7 @@ const _origRenderDashboard = renderDashboard;
 renderDashboard = function() {
   _origRenderDashboard();
   renderSalesReport();
+  renderExpenses();
 };
 
 // ══ UPDATE RENDERSTOCK WITH SEARCH ══
