@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CHAWKPRO × TUMANA</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body,#root{height:100%;overflow:hidden}
+body{font-family:'Space Grotesk',sans-serif;background:#08080c;color:#fff}
+:root{
+  --g:#10b981;--g2:#059669;--gd:linear-gradient(135deg,#10b981,#059669);
+  --a:#f59e0b;--a2:#d97706;--ad:linear-gradient(135deg,#f59e0b,#d97706);
+  --p:#8b5cf6;--p2:#7c3aed;--pd:linear-gradient(135deg,#8b5cf6,#7c3aed);
+  --b:#08080c;--c:#111116;--c2:#1a1a22;
+  --br:rgba(255,255,255,0.07);--br2:rgba(255,255,255,0.13);
+  --t2:rgba(255,255,255,0.45);--t3:rgba(255,255,255,0.2);
+}
+.app{width:100%;max-width:430px;height:100%;margin:0 auto;
+     display:flex;flex-direction:column;background:var(--b);
+     box-shadow:0 0 80px rgba(0,0,0,0.9);overflow:hidden}
+.scr{flex:1;overflow-y:auto;scrollbar-width:none}
+.scr::-webkit-scrollbar{display:none}
+
+/* STATUS BAR */
+.sb{background:#000;height:34px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 18px;font-size:11px;
+    font-weight:700;color:var(--t2);flex-shrink:0}
+
+/* ROLE SELECT */
+.rs{display:flex;flex-direction:column;height:100%;background:var(--b);overflow:hidden}
+.rs-hero{padding:32px 22px 20px;flex-shrink:0}
+.rs-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;color:var(--t2);
+            text-transform:uppercase;margin-bottom:14px}
+.rs-title{font-size:34px;font-weight:800;line-height:1.1;margin-bottom:6px;letter-spacing:-0.5px}
+.rs-sub{font-size:13px;color:var(--t2);line-height:1.55}
+.rs-tabs{display:flex;margin:0 22px 18px;background:var(--c);
+         border-radius:13px;padding:4px;gap:4px;flex-shrink:0}
+.rs-tab{flex:1;padding:10px;text-align:center;border-radius:9px;
+        font-size:13px;font-weight:700;cursor:pointer;transition:.25s;color:var(--t2)}
+.rt-g{background:var(--gd);color:#000}
+.rt-a{background:var(--ad);color:#000}
+.rs-cards{flex:1;overflow-y:auto;padding:0 22px 24px;display:flex;flex-direction:column;gap:10px}
+.rc{background:var(--c);border:1.5px solid var(--br);border-radius:16px;
+    padding:18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.rc:active{transform:scale(0.98)}
+.rc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.rc-ico{width:50px;height:50px;border-radius:13px;display:flex;
+        align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.ico-g{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)}
+.ico-a{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
+.ico-p{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2)}
+.rc-name{font-size:17px;font-weight:700;margin-bottom:2px}
+.rc-sub{font-size:12px;color:var(--t2)}
+.rc-perks{display:flex;flex-direction:column;gap:4px}
+.rc-perk{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.rc-arr{position:absolute;right:18px;top:50%;transform:translateY(-50%);
+        font-size:18px;color:var(--t3)}
+
+/* AUTH FORM */
+.af{padding:24px;overflow-y:auto;flex:1}
+.af-back{display:flex;align-items:center;gap:6px;color:var(--t2);font-size:13px;
+         font-weight:600;cursor:pointer;margin-bottom:24px;width:fit-content}
+.af-icon{font-size:44px;margin-bottom:12px}
+.af-title{font-size:24px;font-weight:700;margin-bottom:6px}
+.af-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.55}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;
+           text-transform:uppercase;color:var(--t2);margin-bottom:7px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--c2);
+  border:1.5px solid var(--br2);border-radius:11px;padding:14px;
+  font-size:15px;color:#fff;font-family:'Space Grotesk',sans-serif;
+  transition:border-color .2s;resize:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--g)}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--t3)}
+.fld select option{background:#1a1a22}
+.btn{width:100%;padding:16px;border-radius:11px;border:none;
+     font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;
+     cursor:pointer;transition:.2s;letter-spacing:.3px}
+.btn:active{transform:scale(0.98)}
+.btn-g{background:var(--gd);color:#000;box-shadow:0 4px 18px rgba(16,185,129,0.3)}
+.btn-a{background:var(--ad);color:#000;box-shadow:0 4px 18px rgba(245,158,11,0.3)}
+.btn-p{background:var(--pd);color:#fff;box-shadow:0 4px 18px rgba(139,92,246,0.3)}
+.btn-ghost{background:transparent;border:1.5px solid var(--br2);color:var(--t2)}
+.divd{display:flex;align-items:center;gap:10px;margin:14px 0;
+      color:var(--t3);font-size:11px}
+.divd::before,.divd::after{content:'';flex:1;height:1px;background:var(--br)}
+
+/* SHARED HEADER */
+.hdr{padding:16px 20px;flex-shrink:0;border-bottom:1px solid var(--br)}
+.hdr-row{display:flex;justify-content:space-between;align-items:center}
+.loc-pill{display:flex;align-items:center;gap:5px;background:rgba(16,185,129,0.08);
+          border:1px solid rgba(16,185,129,0.18);padding:7px 13px;border-radius:20px;
+          font-size:12px;font-weight:700;color:var(--g)}
+.ava{width:36px;height:36px;border-radius:50%;background:var(--gd);
+     display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer}
+.search{background:var(--c);border:1.5px solid var(--br2);border-radius:11px;
+        padding:11px 14px;display:flex;align-items:center;gap:8px;
+        font-size:13px;color:var(--t3);margin-top:12px}
+
+/* SECTION LABEL */
+.sl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--t2);padding:14px 20px 8px;flex-shrink:0}
+
+/* FAVS ROW */
+.favs{display:flex;gap:12px;overflow-x:auto;padding:0 20px 10px;scrollbar-width:none}
+.favs::-webkit-scrollbar{display:none}
+.fav-item{min-width:64px;text-align:center;cursor:pointer;flex-shrink:0}
+.fav-ring{width:54px;height:54px;border-radius:50%;background:var(--gd);
+          display:flex;align-items:center;justify-content:center;font-size:24px;
+          margin:0 auto 5px;border:2px solid rgba(16,185,129,0.3);transition:.2s}
+.fav-item:active .fav-ring{transform:scale(0.92)}
+.fav-name{font-size:10px;font-weight:600;color:var(--t2);white-space:nowrap;
+          overflow:hidden;text-overflow:ellipsis;max-width:60px;margin:0 auto}
+
+/* SHOP CARDS */
+.content{padding:4px 20px 20px}
+.shop-card{background:var(--c);border:1.5px solid var(--br);border-radius:15px;
+           padding:14px;margin-bottom:11px;cursor:pointer;transition:.2s}
+.shop-card:active{transform:scale(0.98);border-color:rgba(16,185,129,0.25)}
+.sc-row{display:flex;gap:11px;align-items:center}
+.sc-ico{width:52px;height:52px;border-radius:12px;background:var(--gd);
+        display:flex;align-items:center;justify-content:center;font-size:25px;flex-shrink:0}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:2px}
+.sc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:rgba(255,255,255,0.04);border:1px solid var(--br2);
+      padding:3px 9px;border-radius:20px;font-size:11px;color:var(--t2);font-weight:600}
+.chip-g{background:rgba(16,185,129,0.07);border-color:rgba(16,185,129,0.18);color:var(--g)}
+
+/* PRODUCTS */
+.ph{padding:14px 20px;flex-shrink:0;border-bottom:1px solid var(--br)}
+.back-btn{display:inline-flex;align-items:center;gap:5px;background:var(--c2);
+          border:1px solid var(--br2);border-radius:9px;padding:8px 12px;
+          font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;margin-bottom:12px}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 20px}
+.pc{background:var(--c);border:1.5px solid var(--br);border-radius:13px;overflow:hidden}
+.pi{height:96px;background:var(--gd);display:flex;align-items:center;
+    justify-content:center;font-size:42px}
+.pb{padding:10px}
+.pn{font-size:12px;font-weight:700;margin-bottom:3px;line-height:1.4}
+.pp{font-size:16px;font-weight:700;color:var(--g);margin-bottom:7px}
+.add-btn{width:100%;background:var(--gd);border:none;border-radius:7px;
+         padding:8px;font-size:11px;font-weight:700;color:#000;
+         font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.qr{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.qb{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;
+    font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif}
+.qb-m{background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+.qb-p{background:rgba(16,185,129,0.1);color:var(--g);border:1px solid rgba(16,185,129,0.2)}
+
+/* ── PICKUP TAB ─────────────────────────────────────────── */
+.pickup-screen{padding:20px;padding-bottom:100px}
+.pu-hero{background:linear-gradient(135deg,#0d1f17,#1a0d30);
+         border:1.5px solid rgba(139,92,246,0.2);border-radius:16px;
+         padding:20px;margin-bottom:20px;position:relative;overflow:hidden}
+.pu-hero::before{content:'🚀';position:absolute;right:16px;top:50%;
+                 transform:translateY(-50%);font-size:60px;opacity:0.08}
+.pu-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.pu-sub{font-size:12px;color:var(--t2);line-height:1.5}
+.pu-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(139,92,246,0.12);
+          border:1px solid rgba(139,92,246,0.25);padding:4px 10px;border-radius:20px;
+          font-size:11px;font-weight:700;color:var(--p);margin-bottom:10px}
+.map-stub{background:var(--c2);border:1.5px solid var(--br2);border-radius:11px;
+          height:110px;display:flex;align-items:center;justify-content:center;
+          margin-bottom:10px;position:relative;overflow:hidden;cursor:pointer}
+.map-stub::before{content:'';position:absolute;inset:0;
+                  background:repeating-linear-gradient(45deg,rgba(16,185,129,0.03) 0px,
+                  rgba(16,185,129,0.03) 1px,transparent 1px,transparent 20px);}
+.map-inner{text-align:center;position:relative;z-index:1}
+.loc-field{background:var(--c2);border:1.5px solid var(--br2);border-radius:11px;
+           padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;
+           cursor:pointer;transition:.2s}
+.loc-field:focus-within{border-color:var(--g)}
+.loc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.loc-dot.green{background:var(--g)}
+.loc-dot.red{background:#ef4444}
+.loc-line{width:2px;height:16px;background:var(--br2);margin:2px 4px}
+.loc-field input{background:transparent;border:none;font-size:14px;color:#fff;
+                 font-family:'Space Grotesk',sans-serif;flex:1}
+.loc-field input:focus{outline:none}
+.loc-field input::placeholder{color:var(--t3)}
+.est-box{background:rgba(139,92,246,0.06);border:1.5px solid rgba(139,92,246,0.15);
+         border-radius:11px;padding:14px;margin:12px 0;display:flex;gap:10px;align-items:center}
+.est-item{flex:1;text-align:center}
+.est-val{font-size:18px;font-weight:700;color:var(--p)}
+.est-label{font-size:10px;color:var(--t2);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+/* FAVOURITE RIDER SELECTOR */
+.fav-rider-box{background:rgba(16,185,129,0.05);border:1.5px solid rgba(16,185,129,0.15);
+               border-radius:11px;padding:14px;margin:10px 0}
+.frb-title{font-size:12px;font-weight:700;color:var(--g);margin-bottom:10px;
+           display:flex;align-items:center;gap:6px}
+.fr-card{display:flex;align-items:center;gap:10px;background:var(--c2);
+         border:1.5px solid var(--br2);border-radius:10px;padding:10px;
+         cursor:pointer;transition:.2s;margin-bottom:8px}
+.fr-card.selected{border-color:var(--g);background:rgba(16,185,129,0.06)}
+.fr-avatar{width:38px;height:38px;border-radius:50%;background:var(--pd);
+           display:flex;align-items:center;justify-content:center;
+           font-size:17px;flex-shrink:0}
+.fr-name{font-size:14px;font-weight:700}
+.fr-meta{font-size:11px;color:var(--t2);margin-top:1px}
+.fr-check{margin-left:auto;font-size:20px}
+.use-any{font-size:12px;color:var(--t2);text-align:center;cursor:pointer;
+         text-decoration:underline;margin-top:6px}
+
+/* ── ORDER TRACKING ─────────────────────────────────────── */
+.oc{background:var(--c);border:1.5px solid var(--br);border-radius:14px;
+    padding:14px;margin-bottom:10px}
+.oc-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:10px}
+.oc-id{font-weight:700;font-size:15px}
+.oc-time{font-size:11px;color:var(--t2);margin-top:2px}
+.spill{padding:5px 10px;border-radius:20px;font-size:10px;font-weight:700;
+       letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.s0{background:rgba(255,255,255,0.05);color:var(--t2);border:1px solid var(--br)}
+.s1{background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)}
+.s2{background:rgba(16,185,129,0.1);color:var(--g);border:1px solid rgba(16,185,129,0.2)}
+.s3{background:rgba(139,92,246,0.1);color:var(--p);border:1px solid rgba(139,92,246,0.2)}
+.s4{background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)}
+.s5{background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)}
+.s6{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
+/* TRACKER STEPS */
+.tracker{margin:12px 0 10px}
+.tr-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:0}
+.tr-left{display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0}
+.tr-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
+        justify-content:center;font-size:10px;flex-shrink:0}
+.tr-dot.done{background:var(--g);color:#000}
+.tr-dot.active{background:var(--p);color:#fff;box-shadow:0 0 0 3px rgba(139,92,246,0.2)}
+.tr-dot.todo{background:var(--c2);color:var(--t3);border:1.5px solid var(--br2)}
+.tr-line{width:2px;flex:1;min-height:12px;margin:2px 0}
+.tr-line.done{background:var(--g)}
+.tr-line.todo{background:var(--br2)}
+.tr-content{padding-bottom:12px;flex:1}
+.tr-name{font-size:13px;font-weight:700;margin-bottom:1px}
+.tr-time{font-size:11px;color:var(--t2)}
+/* RIDER INFO ROW */
+.rider-row{background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);
+           border-radius:9px;padding:10px;margin-top:8px;
+           display:flex;align-items:center;gap:10px}
+.rider-ava{width:34px;height:34px;border-radius:50%;background:var(--pd);
+           display:flex;align-items:center;justify-content:center;font-size:15px}
+.fav-star-btn{margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer}
+
+/* ── PROFILE TAB ─────────────────────────────────────────── */
+.profile-screen{padding:20px;padding-bottom:100px}
+.profile-header{background:linear-gradient(135deg,#0d1f17,var(--b));
+                border:1.5px solid rgba(16,185,129,0.15);border-radius:16px;
+                padding:20px;margin-bottom:20px;text-align:center}
+.profile-ava{width:72px;height:72px;border-radius:50%;background:var(--gd);
+             display:flex;align-items:center;justify-content:center;
+             font-size:32px;margin:0 auto 12px;border:2px solid rgba(16,185,129,0.3)}
+.profile-name{font-size:20px;font-weight:700;margin-bottom:2px}
+.profile-phone{font-size:13px;color:var(--t2)}
+.section-box{background:var(--c);border:1.5px solid var(--br);border-radius:14px;
+             padding:14px;margin-bottom:12px}
+.sb-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+          color:var(--t2);margin-bottom:12px}
+.fav-rider-item{display:flex;align-items:center;gap:10px;padding:8px 0;
+                border-bottom:1px solid var(--br)}
+.fav-rider-item:last-child{border-bottom:none;padding-bottom:0}
+.remove-btn{margin-left:auto;background:none;border:none;color:#ef4444;
+            font-size:18px;cursor:pointer}
+
+/* ── CART & CHECKOUT ─────────────────────────────────────── */
+.cart-item{background:var(--c);border:1.5px solid var(--br);
+           border-left:3px solid var(--g);border-radius:13px;padding:13px;
+           margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+.sum-box{background:rgba(16,185,129,0.04);border:1.5px solid rgba(16,185,129,0.13);
+         border-radius:13px;padding:14px;margin:14px 0}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin:4px 0}
+.sum-total{font-size:17px;font-weight:700;color:var(--g);
+           border-top:1px solid rgba(16,185,129,0.18);padding-top:10px;margin-top:8px}
+.flow-box{background:var(--c2);border:1px solid var(--br);border-radius:9px;padding:11px;margin-top:9px}
+.flow-t{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g);margin-bottom:7px}
+.flow-row{display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin:3px 0}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);
+         display:flex;align-items:flex-end;z-index:1000}
+.modal{background:linear-gradient(180deg,#141a18,#0d0d0f);
+       border:1.5px solid rgba(16,185,129,0.2);border-radius:22px 22px 0 0;
+       padding:24px 22px 44px;width:100%;max-height:88vh;overflow-y:auto}
+.modal-handle{width:38px;height:4px;background:var(--br2);border-radius:2px;margin:0 auto 18px}
+.modal-icon{font-size:42px;text-align:center;margin-bottom:10px}
+.modal-title{font-size:21px;font-weight:700;text-align:center;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:18px;line-height:1.6}
+.pay-box{background:rgba(16,185,129,0.05);border:1.5px solid rgba(16,185,129,0.18);
+         border-radius:13px;padding:14px;margin-bottom:14px}
+.pay-row{display:flex;justify-content:space-between;align-items:center;margin:7px 0}
+.pay-lbl{font-size:12px;color:var(--t2)}
+.pay-val{font-size:15px;font-weight:700;color:var(--g)}
+.steps-list{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+.step-item{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--t2)}
+.step-n{width:18px;height:18px;border-radius:50%;background:var(--g);color:#000;
+        font-size:9px;font-weight:800;display:flex;align-items:center;
+        justify-content:center;flex-shrink:0;margin-top:1px}
+.two-btn{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+
+/* ── SHOP DASHBOARD ─────────────────────────────────────── */
+.sh{background:linear-gradient(180deg,#1f1500,var(--b));padding:18px;flex-shrink:0}
+.sh-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.scard{background:var(--c2);border:1.5px solid var(--br);border-radius:13px;padding:13px}
+.sv{font-size:22px;font-weight:700;margin-bottom:2px}
+.sv-g{color:var(--g)}.sv-a{color:var(--a)}.sv-p{color:var(--p)}
+.slbl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.tog-strip{display:flex;justify-content:space-between;align-items:center;
+           background:rgba(16,185,129,0.04);border:1.5px solid rgba(16,185,129,0.12);
+           border-radius:11px;padding:11px 13px;margin-top:11px}
+.tog-track{width:48px;height:26px;border-radius:13px;background:#333;
+           position:relative;cursor:pointer;transition:.3s;flex-shrink:0}
+.tog-track.on{background:var(--g)}
+.tog-thumb{width:20px;height:20px;border-radius:50%;background:#fff;
+           position:absolute;top:3px;left:3px;transition:.3s;pointer-events:none}
+.tog-track.on .tog-thumb{transform:translateX(22px)}
+.shop-tabs{display:flex;background:var(--c);border-radius:11px;
+           padding:3px;margin:12px 20px 0;gap:3px;flex-shrink:0}
+.stab{flex:1;padding:9px 5px;text-align:center;border-radius:8px;
+      font-size:11px;font-weight:700;cursor:pointer;transition:.2s;color:var(--t2)}
+.stab.act{background:var(--ad);color:#000}
+.do-card{background:var(--c);border:1.5px solid var(--br);
+         border-left:4px solid var(--g);border-radius:13px;padding:14px;margin-bottom:11px}
+.mp-inp{width:100%;background:var(--c2);border:1.5px solid rgba(16,185,129,0.22);
+        border-radius:9px;padding:12px;font-size:14px;color:#fff;
+        font-family:'Space Grotesk',sans-serif;text-transform:uppercase;
+        letter-spacing:1px;margin-bottom:9px}
+.mp-inp:focus{outline:none;border-color:var(--g)}
+.mp-inp::placeholder{text-transform:none;letter-spacing:0;color:var(--t3)}
+.act-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.btn-rej{background:transparent;border:1.5px solid rgba(239,68,68,0.35);
+         color:#ef4444;padding:11px;border-radius:9px;font-weight:700;
+         font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.btn-cfm{background:var(--gd);border:none;color:#000;padding:11px;
+         border-radius:9px;font-weight:700;font-size:12px;
+         font-family:'Space Grotesk',sans-serif;cursor:pointer}
+
+/* ── RIDER DASHBOARD ─────────────────────────────────────── */
+.rh{background:linear-gradient(180deg,#110a20,var(--b));padding:18px;flex-shrink:0}
+.r-tog{display:flex;justify-content:space-between;align-items:center;
+       background:var(--c2);border:1.5px solid var(--br2);
+       border-radius:13px;padding:13px 15px;margin-top:13px}
+.job-card{background:var(--c);border:1.5px solid rgba(139,92,246,0.22);
+          border-radius:15px;padding:15px;margin-bottom:11px;position:relative}
+.new-badge{position:absolute;top:11px;right:11px;background:var(--pd);
+           color:#fff;font-size:9px;font-weight:700;padding:3px 9px;
+           border-radius:20px;letter-spacing:.5px}
+.pu-tag{position:absolute;top:11px;right:11px;background:rgba(245,158,11,0.15);
+        color:var(--a);border:1px solid rgba(245,158,11,0.25);
+        font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px}
+.rr{display:flex;gap:9px;margin:9px 0;align-items:flex-start}
+.rd{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;
+    justify-content:center;font-size:15px;flex-shrink:0}
+.rd-g{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)}
+.rd-p{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2)}
+.rd-a{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
+.earn-hl{background:rgba(16,185,129,0.05);border:1.5px solid rgba(16,185,129,0.13);
+         border-radius:10px;padding:10px;margin:9px 0;
+         display:flex;justify-content:space-between;align-items:center}
+.jbtns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.btn-dec{background:transparent;border:1.5px solid rgba(239,68,68,0.3);
+         color:#ef4444;padding:10px;border-radius:9px;font-weight:700;
+         font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.btn-acc{background:var(--gd);border:none;color:#000;padding:10px;
+         border-radius:9px;font-weight:700;font-size:12px;
+         font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.active-job{background:var(--c);border:2px solid var(--g);border-radius:15px;padding:16px;margin-bottom:14px}
+.prog-row{display:flex;align-items:center;gap:6px;margin:10px 0}
+.prog-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;
+          justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.prog-dot.done{background:var(--g);color:#000}
+.prog-dot.act{background:var(--p);color:#fff}
+.prog-dot.todo{background:var(--c2);color:var(--t3);border:1.5px solid var(--br2)}
+.prog-line{flex:1;height:2px}
+.prog-line.done{background:var(--g)}
+.prog-line.todo{background:var(--br2)}
+
+/* ── BOTTOM NAV ─────────────────────────────────────────── */
+.bnav{display:flex;background:#000;border-top:1px solid var(--br);
+      flex-shrink:0;padding:8px 0 4px}
+.nb{flex:1;text-align:center;cursor:pointer;padding:5px 3px;border-radius:9px;position:relative}
+.ni{font-size:21px;margin-bottom:2px}
+.nl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.nb.a-g .nl{color:var(--g)}
+.nb.a-a .nl{color:var(--a)}
+.nb.a-p .nl{color:var(--p)}
+.nbadge{position:absolute;top:2px;right:calc(50% - 15px);background:#ef4444;
+        color:#fff;border-radius:50%;width:15px;height:15px;font-size:9px;
+        font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* ── LOADING / EMPTY / TOAST ─────────────────────────────── */
+.loading{display:flex;align-items:center;justify-content:center;
+         padding:56px 20px;flex-direction:column;gap:12px;color:var(--t2)}
+.spin{width:34px;height:34px;border:3px solid var(--br);
+      border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:56px 20px}
+.ei{font-size:60px;margin-bottom:12px}
+.et{font-size:16px;font-weight:700;margin-bottom:5px}
+.es{font-size:12px;color:var(--t2);line-height:1.6}
+.toast{position:fixed;top:44px;left:50%;transform:translateX(-50%);
+       background:#fff;color:#000;padding:10px 20px;border-radius:9px;
+       font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;
+       box-shadow:0 8px 28px rgba(0,0,0,0.5)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ─── FIREBASE CONFIG (chawkpro1) ────────────────────────── */
+const firebaseConfig = {
+  apiKey: "AIzaSyB_C61rcssdlvqbyUK_QcHkl4HxbwcQBOI",
+  authDomain: "chawkpro1.firebaseapp.com",
+  projectId: "chawkpro1",
+  storageBucket: "chawkpro1.firebasestorage.app",
+  messagingSenderId: "897807998371",
+  appId: "1:897807998371:web:33770a8ee5950c54860e16",
+  measurementId: "G-0QSDD8JNLV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ─── CONSTANTS ──────────────────────────────────────────── */
+const MPESA = "0799878872";
+const D_BASE = 50, D_KM = 20;
+const calcFee = km => Math.round(D_BASE + (parseFloat(km)||0.5) * D_KM);
+const calcBk = (sub, fee) => ({
+  sub, fee,
+  shopGets: sub,
+  riderGets: Math.round(fee * 0.90),
+  platGets:  Math.round(fee * 0.10),
+  total: sub + fee
+});
+const uid = () => Math.random().toString(36).slice(2,10).toUpperCase();
+</script>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef} = React;
+
+/* ─── TOAST HOOK ─────────────────────────────────────────── */
+let _tt;
+function useToast(){
+  const [m,setM] = useState('');
+  const show = useCallback(s=>{setM(s);clearTimeout(_tt);_tt=setTimeout(()=>setM(''),2800)},[]);
+  return [m,show];
+}
+
+/* ─── MOCK DATA (fallback when offline) ──────────────────── */
+const MOCK_SHOPS = [
+  {id:'ms1',name:"Mama Jane's Grocery",category:'Grocery',distance_km:0.5,rating:4.8,icon:'🛒',location:'Chemelil Center',delivery_enabled:true},
+  {id:'ms2',name:'Chemelil Pharmacy',category:'Pharmacy',distance_km:0.8,rating:4.9,icon:'💊',location:'Near Hospital',delivery_enabled:true},
+  {id:'ms3',name:'Fresh Mboga',category:'Vegetables',distance_km:0.3,rating:4.7,icon:'🥬',location:'Market',delivery_enabled:true},
+  {id:'ms4',name:"Omondi's Butchery",category:'Butchery',distance_km:0.6,rating:4.6,icon:'🥩',location:'Stage Area',delivery_enabled:true},
+];
+const MOCK_PRODS = {
+  ms1:[{id:'p1',name:'Maziwa 500ml',selling_price:60,quantity:20,emoji:'🥛'},
+       {id:'p2',name:'Mkate Brown',selling_price:55,quantity:15,emoji:'🍞'},
+       {id:'p3',name:'Mayai (tray)',selling_price:360,quantity:8,emoji:'🥚'},
+       {id:'p4',name:'Mchele 2kg',selling_price:280,quantity:12,emoji:'🍚'}],
+  ms2:[{id:'p5',name:'Panadol',selling_price:50,quantity:100,emoji:'💊'},
+       {id:'p6',name:'Dettol 250ml',selling_price:180,quantity:30,emoji:'🧴'}],
+  ms3:[{id:'p7',name:'Tomatoes 1kg',selling_price:80,quantity:30,emoji:'🍅'},
+       {id:'p8',name:'Sukuma Wiki',selling_price:30,quantity:40,emoji:'🥬'}],
+  ms4:[{id:'p9',name:'Nyama Kilo',selling_price:800,quantity:10,emoji:'🥩'},
+       {id:'p10',name:'Chicken',selling_price:600,quantity:5,emoji:'🍗'}],
+};
+
+/* ─── ORDER STATUS CONFIG ────────────────────────────────── */
+const STATUS_FLOW = {
+  // For shop orders (needs payment confirmation)
+  shop: [
+    {key:'placed',      label:'Order Placed',         icon:'🕐'},
+    {key:'confirmed',   label:'Payment Confirmed',    icon:'✅'},
+    {key:'assigned',    label:'Rider Assigned',       icon:'🏍️'},
+    {key:'heading',     label:'Heading to Shop',      icon:'🔍'},
+    {key:'picked',      label:'Order Picked Up',      icon:'📦'},
+    {key:'transit',     label:'Out for Delivery',     icon:'🚴'},
+    {key:'delivered',   label:'Delivered',            icon:'✅'},
+  ],
+  // For pickup requests (no payment confirmation needed)
+  pickup: [
+    {key:'placed',      label:'Request Placed',       icon:'🕐'},
+    {key:'assigned',    label:'Rider Assigned',       icon:'🏍️'},
+    {key:'heading',     label:'Heading to Pickup',    icon:'🔍'},
+    {key:'picked',      label:'Item Picked Up',       icon:'📦'},
+    {key:'transit',     label:'On the Way',           icon:'🚴'},
+    {key:'delivered',   label:'Delivered',            icon:'✅'},
+  ]
+};
+const STATUS_PILL = {
+  placed:    {cls:'s1',label:'Placed'},
+  confirmed: {cls:'s2',label:'Payment OK'},
+  assigned:  {cls:'s3',label:'Rider Coming'},
+  heading:   {cls:'s3',label:'En Route'},
+  picked:    {cls:'s4',label:'Picked Up'},
+  transit:   {cls:'s5',label:'In Transit'},
+  delivered: {cls:'s6',label:'Delivered ✅'},
+};
+
+/* ══════════════════════════════════════════════════════════
+   ROLE SELECTION
+══════════════════════════════════════════════════════════ */
+function RoleScreen({onLogin}){
+  const [tab,setTab]=useState('tumana');
+  const [step,setStep]=useState('pick');
+  const [role,setRole]=useState(null);
+
+  const ROLES={
+    tumana:[
+      {id:'customer',label:'Customer',icon:'🛍️',col:'g',sub:'Order from shops OR request a pickup anywhere',
+       perks:['Browse CHAWKPRO shops & order','Request pick-up from any location','Save favourite riders','Live order tracking (7 stages)']},
+      {id:'rider',label:'Rider',icon:'🏍️',col:'p',sub:'Earn KSh 1,000+/day on deliveries & pickups',
+       perks:['Shop delivery jobs','Pickup & errand jobs','90% of every delivery fee','Daily M-Pesa payouts']},
+    ],
+    shop:[
+      {id:'shop',label:'Shop Owner',icon:'🏪',col:'a',sub:'CHAWKPRO management + Tumana delivery orders',
+       perks:['Full sales & stock management (CHAWKPRO)','Receive delivery orders automatically','Your stock auto-syncs as customer menu','Zero commission — only KSh 100/month']},
+    ]
+  };
+
+  if(step==='form') return <AuthForm role={role} onBack={()=>setStep('pick')} onLogin={onLogin}/>;
+  return(
+    <div className="rs">
+      <div className="rs-hero">
+        <div className="rs-eyebrow">CHAWKPRO × TUMANA</div>
+        <div className="rs-title">{tab==='tumana'?<><span style={{color:'var(--g)'}}>Order & Earn</span><br/>in Chemelil</>:<><span style={{color:'var(--a)'}}>Sell More</span><br/>with Delivery</>}</div>
+        <div className="rs-sub" style={{marginTop:6}}>
+          {tab==='tumana'?'One app. Order from shops or request a pickup anywhere.':'Connect CHAWKPRO to Tumana and grow your sales automatically.'}
+        </div>
+      </div>
+      <div className="rs-tabs">
+        <div className={`rs-tab ${tab==='tumana'?'rt-g':''}`} onClick={()=>setTab('tumana')}>🚴 TUMANA</div>
+        <div className={`rs-tab ${tab==='shop'?'rt-a':''}`} onClick={()=>setTab('shop')}>🏪 SHOP</div>
+      </div>
+      <div className="rs-cards">
+        {ROLES[tab].map(r=>(
+          <div key={r.id} className="rc" onClick={()=>{setRole(r);setStep('form');}}>
+            <div className="rc-top">
+              <div className={`rc-ico ico-${r.col}`}>{r.icon}</div>
+              <div><div className="rc-name">{r.label}</div><div className="rc-sub">{r.sub}</div></div>
+            </div>
+            <div className="rc-perks">
+              {r.perks.map((p,i)=>(
+                <div key={i} className="rc-perk">
+                  <span style={{color:r.col==='g'?'var(--g)':r.col==='a'?'var(--a)':'var(--p)'}}>✓</span>{p}
+                </div>
+              ))}
+            </div>
+            <div className="rc-arr">→</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── AUTH FORM ───────────────────────────────────────────── */
+function AuthForm({role,onBack,onLogin}){
+  const [isLogin,setIsLogin]=useState(false);
+  const [f,setF]=useState({name:'',phone:'',shopName:'',idNum:''});
+  const [loading,setLoading]=useState(false);
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
+  const isShop=role.id==='shop',isRider=role.id==='rider';
+  const accent=isShop?'btn-a':isRider?'btn-p':'btn-g';
+
+  const submit=async()=>{
+    if(!f.phone||f.phone.length<9){alert('Enter valid phone');return;}
+    if(!isLogin&&!f.name){alert('Enter your name');return;}
+    setLoading(true);
+    const userData={role:role.id,name:f.name.trim(),phone:f.phone.trim(),
+                    shopName:f.shopName.trim(),idNum:f.idNum.trim(),
+                    total_earnings:0,orders_completed:0,favourite_riders:[]};
+    try{
+      if(!isLogin) await db.collection('tumana_users').doc(f.phone).set(
+        {...userData,created_at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+    }catch(e){}
+    localStorage.setItem('tumana_user',JSON.stringify(userData));
+    onLogin(userData);
+    setLoading(false);
+  };
+
+  return(
+    <div className="app" style={{overflow:'hidden',display:'flex',flexDirection:'column'}}>
+      <div className="af scr">
+        <div className="af-back" onClick={onBack}>← Back</div>
+        <div className="af-icon">{role.icon}</div>
+        <div className="af-title" style={{color:isShop?'var(--a)':isRider?'var(--p)':'var(--g)'}}>
+          {isLogin?`Welcome back, ${role.label}`:`Join as ${role.label}`}
+        </div>
+        <div className="af-sub">
+          {isShop?'Link your CHAWKPRO shop to receive Tumana delivery orders':
+           isRider?'Start earning today — accept deliveries and pickups':
+           'Order from local shops or request any pickup in Chemelil'}
+        </div>
+        {!isLogin&&<div className="fld"><label>Full Name</label>
+          <input type="text" placeholder="e.g. Jane Achieng" value={f.name} onChange={e=>u('name',e.target.value)}/></div>}
+        <div className="fld"><label>Phone Number (M-Pesa)</label>
+          <input type="tel" placeholder="07XX XXX XXX" value={f.phone} onChange={e=>u('phone',e.target.value)}/></div>
+        {!isLogin&&isShop&&<div className="fld"><label>Shop Name</label>
+          <input type="text" placeholder="e.g. Mama Jane's Grocery" value={f.shopName} onChange={e=>u('shopName',e.target.value)}/></div>}
+        {!isLogin&&isRider&&<div className="fld"><label>National ID Number</label>
+          <input type="text" placeholder="For verification & payouts" value={f.idNum} onChange={e=>u('idNum',e.target.value)}/></div>}
+        <button className={`btn ${accent}`} style={{marginTop:8}} onClick={submit} disabled={loading}>
+          {loading?'Please wait…':isLogin?'Login →':'Create Account →'}
+        </button>
+        <div className="divd">or</div>
+        <button className="btn btn-ghost" onClick={()=>setIsLogin(!isLogin)}>
+          {isLogin?'Create new account':'Already registered? Login'}
+        </button>
+        {isShop&&!isLogin&&<div style={{marginTop:14,background:'rgba(245,158,11,0.05)',border:'1px solid rgba(245,158,11,0.12)',borderRadius:10,padding:12,fontSize:12,color:'var(--t2)',lineHeight:1.7}}>
+          💡 Already on CHAWKPRO? Use same phone number — your stock auto-links as your delivery menu.
+        </div>}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   CUSTOMER APP
+══════════════════════════════════════════════════════════ */
+function CustomerApp({user,onLogout}){
+  const [tab,setTab]=useState('home');
+  const [shops,setShops]=useState([]);
+  const [shopsLoading,setShopsLoading]=useState(true);
+  const [selectedShop,setSelectedShop]=useState(null);
+  const [cart,setCart]=useState([]);
+  const [orders,setOrders]=useState([]);
+  const [ordersLoading,setOrdersLoading]=useState(false);
+  const [checkout,setCheckout]=useState(null);
+  const [toast,showToast]=useToast();
+  const [userData,setUserData]=useState(user);
+
+  // Favourites stored in user doc
+  const favShopIds = userData.favourite_shops||[];
+  const favRiders  = userData.favourite_riders||[];
+
+  const saveUserData = async(updated) => {
+    setUserData(updated);
+    localStorage.setItem('tumana_user',JSON.stringify(updated));
+    db.collection('tumana_users').doc(user.phone).set(updated,{merge:true}).catch(()=>{});
+  };
+
+  /* ── Load shops ── */
+  useEffect(()=>{
+    const unsub=db.collection('shops').where('delivery_enabled','==',true)
+      .onSnapshot(s=>{setShops(s.docs.map(d=>({id:d.id,...d.data()})));setShopsLoading(false);},
+        ()=>{setShops(MOCK_SHOPS);setShopsLoading(false);});
+    return()=>unsub();
+  },[]);
+
+  /* ── Load orders ── */
+  useEffect(()=>{
+    if(tab!=='orders') return;
+    setOrdersLoading(true);
+    const unsub=db.collection('delivery_orders')
+      .where('customer_phone','==',user.phone)
+      .orderBy('created_at','desc').limit(30)
+      .onSnapshot(s=>{setOrders(s.docs.map(d=>({id:d.id,...d.data()})));setOrdersLoading(false);},
+        ()=>{setOrdersLoading(false);});
+    return()=>unsub();
+  },[tab,user.phone]);
+
+  /* ── Cart helpers ── */
+  const addToCart=(shop,prod,ch)=>setCart(prev=>{
+    const idx=prev.findIndex(i=>i.id===prod.id);
+    if(idx>=0){
+      const u=[...prev];const q=u[idx].quantity+ch;
+      if(q<=0){u.splice(idx,1);return u;}
+      u[idx]={...u[idx],quantity:q};return u;
+    }
+    if(ch<1) return prev;
+    if(prev.length>0&&prev[0].shopId!==shop.id){
+      if(!confirm(`Clear cart from ${prev[0].shopName}?`)) return prev;
+      return [{...prod,quantity:1,shopId:shop.id,shopName:shop.name,shopDist:shop.distance_km||0.5}];
+    }
+    return [...prev,{...prod,quantity:1,shopId:shop.id,shopName:shop.name,shopDist:shop.distance_km||0.5}];
+  });
+  const updateCart=(i,ch)=>setCart(prev=>{
+    const u=[...prev];const q=u[i].quantity+ch;
+    if(q<=0){u.splice(i,1);return u;}
+    u[i]={...u[i],quantity:q};return u;
+  });
+  const cartCount=cart.reduce((s,i)=>s+i.quantity,0);
+
+  /* ── Place shop order ── */
+  const confirmOrder=async(bk)=>{
+    const shop=shops.find(s=>s.id===cart[0]?.shopId)||{};
+    const orderData={
+      type:'shop',
+      customer_phone:user.phone,customer_name:user.name,
+      shop_id:shop.id||cart[0]?.shopId,shopName:shop.name||cart[0]?.shopName,
+      shop_location:shop.location||'',
+      delivery_address:`${user.name}'s location`,
+      items:cart.map(i=>({id:i.id,name:i.name||i.product_name,quantity:i.quantity,price:i.selling_price})),
+      subtotal:bk.sub,delivery_fee:bk.fee,total:bk.total,
+      rider_earnings:bk.riderGets,platform_earnings:bk.platGets,
+      distance:cart[0]?.shopDist||0.5,
+      status:'placed',rider_phone:null,rider_name:null,
+      preferred_rider:userData.preferred_rider||null,
+      created_at:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    try{await db.collection('delivery_orders').add(orderData);}catch(e){}
+    setCart([]);setCheckout(null);setTab('orders');
+    showToast('✅ Order placed! Shop confirming payment');
+  };
+
+  /* ── Toggle favourite shop ── */
+  const toggleFavShop=(id)=>{
+    const cur=userData.favourite_shops||[];
+    const updated={...userData,favourite_shops:cur.includes(id)?cur.filter(f=>f!==id):[...cur,id]};
+    saveUserData(updated);
+    showToast(cur.includes(id)?'Removed from favourites':'⭐ Added to favourites');
+  };
+
+  /* ── Set preferred rider ── */
+  const setPreferredRider=(rider)=>{
+    const updated={...userData,preferred_rider:rider};
+    saveUserData(updated);
+    showToast(`⭐ ${rider.name} set as your go-to rider`);
+  };
+  const removePreferredRider=()=>{
+    const {preferred_rider,...rest}=userData;
+    saveUserData(rest);
+    showToast('Rider preference cleared');
+  };
+
+  /* ── Mark favourite rider after delivery ── */
+  const favRiderAfterDelivery=(order)=>{
+    if(!order.rider_name||!order.rider_phone) return;
+    setPreferredRider({name:order.rider_name,phone:order.rider_phone,rating:order.rider_rating||'5.0'});
+  };
+
+  const favShops=shops.filter(s=>(userData.favourite_shops||[]).includes(s.id));
+
+  return(
+    <>
+      {toast&&<div className="toast">{toast}</div>}
+      {checkout&&(
+        <div className="overlay">
+          <div className="modal">
+            <div className="modal-handle"/>
+            <div className="modal-icon">📱</div>
+            <div className="modal-title">Send M-Pesa Now</div>
+            <div className="modal-sub">Send payment to the number below. Shop confirms receipt and your rider is assigned automatically.</div>
+            <div className="pay-box">
+              <div className="pay-row"><span className="pay-lbl">Send to (M-Pesa)</span><span className="pay-val">📱 {MPESA}</span></div>
+              <div className="pay-row"><span className="pay-lbl">Amount</span><span className="pay-val">KSh {checkout.total}</span></div>
+              <div className="pay-row"><span className="pay-lbl">Reference</span><span style={{fontSize:13,fontWeight:700,color:'var(--g)'}}>TUM{user.phone.slice(-4)}</span></div>
+            </div>
+            <div className="steps-list">
+              <div className="step-item"><div className="step-n">1</div><span>Open M-Pesa → Send Money → Enter {MPESA}</span></div>
+              <div className="step-item"><div className="step-n">2</div><span>Amount: KSh {checkout.total} · Reference: TUM{user.phone.slice(-4)}</span></div>
+              <div className="step-item"><div className="step-n">3</div><span>Tap "I've Sent" — shop confirms then rider is auto-assigned</span></div>
+            </div>
+            <div className="flow-box">
+              <div className="flow-t">💡 Where your money goes</div>
+              <div className="flow-row"><span>Shop earns (products, 100%)</span><span>KSh {checkout.shopGets}</span></div>
+              <div className="flow-row"><span>Rider earns (90% of delivery)</span><span>KSh {checkout.riderGets}</span></div>
+              <div className="flow-row"><span>Platform (10% of delivery)</span><span>KSh {checkout.platGets}</span></div>
+            </div>
+            <div className="two-btn">
+              <button className="btn btn-ghost" onClick={()=>setCheckout(null)}>Cancel</button>
+              <button className="btn btn-g" onClick={()=>confirmOrder(checkout)}>✅ I've Sent</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── HOME TAB ─────────────────────────────────────── */}
+      {tab==='home'&&!selectedShop&&(
+        <>
+          <div className="hdr">
+            <div className="hdr-row">
+              <div className="loc-pill">📍 Chemelil</div>
+              <div className="ava" onClick={()=>setTab('profile')}>{user.name[0].toUpperCase()}</div>
+            </div>
+            <div className="search">🔍 Search shops or products…</div>
+          </div>
+          {favShops.length>0&&(
+            <><div className="sl">⭐ Favourite Shops</div>
+            <div className="favs">
+              {favShops.map(s=>(
+                <div key={s.id} className="fav-item" onClick={()=>setSelectedShop(s)}>
+                  <div className="fav-ring">{s.icon||'🏪'}</div>
+                  <div className="fav-name">{s.name.split(' ')[0]}</div>
+                </div>
+              ))}
+            </div></>
+          )}
+          <div className="sl">All Shops</div>
+          <div className="scr"><div className="content">
+            {shopsLoading&&<div className="loading"><div className="spin"/></div>}
+            {!shopsLoading&&shops.map(s=>(
+              <div key={s.id} className="shop-card" onClick={()=>setSelectedShop(s)}>
+                <div className="sc-row">
+                  <div className="sc-ico">{s.icon||'🏪'}</div>
+                  <div style={{flex:1}}>
+                    <div className="sc-name">{s.name}</div>
+                    <div style={{fontSize:12,color:'var(--t2)'}}>{s.category} · {s.location}</div>
+                  </div>
+                  <button style={{background:'none',border:'none',fontSize:20,cursor:'pointer',
+                                  color:(userData.favourite_shops||[]).includes(s.id)?'#fbbf24':'#333'}}
+                          onClick={e=>{e.stopPropagation();toggleFavShop(s.id);}}>
+                    {(userData.favourite_shops||[]).includes(s.id)?'★':'☆'}
+                  </button>
+                </div>
+                <div className="sc-meta">
+                  <span className="chip chip-g">🚴 KSh {calcFee(s.distance_km)} delivery</span>
+                  <span className="chip">⭐ {s.rating||'4.8'}</span>
+                  <span className="chip">⏱ 15-25 min</span>
+                </div>
+              </div>
+            ))}
+          </div></div>
+        </>
+      )}
+      {tab==='home'&&selectedShop&&(
+        <ShopProducts shop={selectedShop} cart={cart}
+          onBack={()=>setSelectedShop(null)} onAdd={addToCart}/>
+      )}
+
+      {/* ── PICKUP TAB ───────────────────────────────────── */}
+      {tab==='pickup'&&(
+        <div className="scr">
+          <PickupTab user={userData} favRiders={userData.favourite_riders||[]}
+                     preferredRider={userData.preferred_rider||null}
+                     onOrderPlaced={()=>{setTab('orders');showToast('✅ Pickup requested! Rider being assigned');}}
+                     showToast={showToast}/>
+        </div>
+      )}
+
+      {/* ── CART TAB ─────────────────────────────────────── */}
+      {tab==='cart'&&(
+        <div className="scr">
+          <div style={{padding:'18px 20px 0'}}>
+            <div style={{fontSize:20,fontWeight:700,marginBottom:2}}>Your Cart</div>
+            {cart.length>0&&<div style={{fontSize:12,color:'var(--t2)',marginBottom:14}}>{cart[0].shopName}</div>}
+          </div>
+          {cart.length===0?(
+            <div className="empty"><div className="ei">🛒</div>
+              <div className="et">Cart is empty</div>
+              <div className="es">Go browse shops and add items</div></div>
+          ):(
+            <div style={{padding:'0 20px 100px'}}>
+              {cart.map((item,i)=>(
+                <div key={item.id} className="cart-item">
+                  <div><div style={{fontWeight:700,marginBottom:2}}>{item.name||item.product_name}</div>
+                       <div style={{fontSize:11,color:'var(--t2)'}}>KSh {item.selling_price} each</div></div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontWeight:700,color:'var(--g)',fontSize:15,marginBottom:5}}>
+                      KSh {item.selling_price*item.quantity}</div>
+                    <div className="qr">
+                      <button className="qb qb-m" onClick={()=>updateCart(i,-1)}>−</button>
+                      <span style={{fontWeight:700,minWidth:18,textAlign:'center'}}>{item.quantity}</span>
+                      <button className="qb qb-p" onClick={()=>updateCart(i,1)}>+</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {(()=>{
+                const sub=cart.reduce((s,i)=>s+i.selling_price*i.quantity,0);
+                const fee=calcFee(cart[0]?.shopDist||0.5);
+                const bk=calcBk(sub,fee);
+                return(<>
+                  <div className="sum-box">
+                    <div className="sum-row"><span>Subtotal</span><span>KSh {sub}</span></div>
+                    <div className="sum-row"><span>Delivery ({cart[0]?.shopDist||0.5} km)</span><span>KSh {fee}</span></div>
+                    <div className="sum-row sum-total"><span>Total</span><span>KSh {bk.total}</span></div>
+                    <div className="flow-box">
+                      <div className="flow-t">💡 Money flow</div>
+                      <div className="flow-row"><span>Shop gets (100%)</span><span>KSh {sub}</span></div>
+                      <div className="flow-row"><span>Rider gets (90%)</span><span>KSh {bk.riderGets}</span></div>
+                      <div className="flow-row"><span>Platform (10%)</span><span>KSh {bk.platGets}</span></div>
+                    </div>
+                  </div>
+                  <button className="btn btn-g" onClick={()=>setCheckout(bk)}>
+                    Place Order → KSh {bk.total}
+                  </button>
+                </>);
+              })()}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── ORDERS TAB ───────────────────────────────────── */}
+      {tab==='orders'&&(
+        <div className="scr">
+          <div style={{padding:'18px 20px 0'}}>
+            <div style={{fontSize:20,fontWeight:700,marginBottom:4}}>My Orders</div>
+            <div style={{fontSize:12,color:'var(--t2)',marginBottom:14}}>Live tracking with 7 status stages</div>
+          </div>
+          <div style={{padding:'0 20px 100px'}}>
+            {ordersLoading&&<div className="loading"><div className="spin"/></div>}
+            {!ordersLoading&&orders.length===0&&(
+              <div className="empty"><div className="ei">📦</div>
+                <div className="et">No orders yet</div>
+                <div className="es">Your shop orders and pickup requests appear here</div></div>
+            )}
+            {orders.map(o=>{
+              const sp=STATUS_PILL[o.status]||STATUS_PILL.placed;
+              const flow=STATUS_FLOW[o.type||'shop'];
+              const curIdx=flow.findIndex(s=>s.key===o.status);
+              return(
+                <div key={o.id} className="oc">
+                  <div className="oc-head">
+                    <div>
+                      <div className="oc-id">
+                        {o.type==='pickup'?'🏍️ Pickup':'🛒 Shop Order'} #{o.id.slice(-6).toUpperCase()}
+                      </div>
+                      <div className="oc-time">{o.shopName||o.pickup_from||'Order'} · {new Date(o.created_at?.seconds*1000||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+                    </div>
+                    <span className={`spill ${sp.cls}`}>{sp.label}</span>
+                  </div>
+
+                  {/* ── TRACKER ── */}
+                  <div className="tracker">
+                    {flow.map((step,i)=>{
+                      const isDone=i<curIdx;const isAct=i===curIdx;
+                      const isLast=i===flow.length-1;
+                      return(
+                        <div key={step.key} className="tr-step">
+                          <div className="tr-left">
+                            <div className={`tr-dot ${isDone?'done':isAct?'active':'todo'}`}>
+                              {isDone?'✓':step.icon}
+                            </div>
+                            {!isLast&&<div className={`tr-line ${isDone?'done':'todo'}`}/>}
+                          </div>
+                          <div className="tr-content">
+                            <div className="tr-name" style={{color:isDone?'var(--g)':isAct?'#fff':'var(--t2)'}}>
+                              {step.label}
+                            </div>
+                            {isAct&&<div className="tr-time">Now</div>}
+                            {isDone&&<div className="tr-time" style={{color:'var(--g)'}}>Done ✓</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* ── ITEMS / AMOUNT ── */}
+                  <div style={{fontSize:12,color:'var(--t2)',marginBottom:5}}>
+                    {o.type==='pickup'
+                      ?`📍 ${o.pickup_from||'Pickup'} → ${o.delivery_address||'Drop-off'}`
+                      :(o.items||[]).map(i=>`${i.name} ×${i.quantity}`).join(' · ')}
+                  </div>
+                  <div style={{fontWeight:700,color:'var(--g)'}}>KSh {o.total}</div>
+
+                  {/* ── RIDER INFO + FAVOURITE ── */}
+                  {o.rider_name&&(
+                    <div className="rider-row">
+                      <div className="rider-ava">🏍️</div>
+                      <div>
+                        <div style={{fontWeight:700,fontSize:13}}>{o.rider_name}</div>
+                        <div style={{fontSize:11,color:'var(--t2)'}}>{o.rider_phone}</div>
+                      </div>
+                      <button className="fav-star-btn"
+                              title="Set as favourite rider"
+                              onClick={()=>favRiderAfterDelivery(o)}>
+                        {userData.preferred_rider?.phone===o.rider_phone?'⭐':'☆'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── PROFILE TAB ──────────────────────────────────── */}
+      {tab==='profile'&&(
+        <div className="scr">
+          <ProfileTab user={userData} onLogout={onLogout}
+                      onRemoveRider={removePreferredRider}
+                      onSave={saveUserData} showToast={showToast}/>
+        </div>
+      )}
+
+      {/* ── BOTTOM NAV ───────────────────────────────────── */}
+      <div className="bnav">
+        <div className={`nb ${tab==='home'?'a-g':''}`} onClick={()=>{setTab('home');setSelectedShop(null);}}>
+          <div className="ni">🏠</div><div className="nl">Shops</div>
+        </div>
+        <div className={`nb ${tab==='pickup'?'a-g':''}`} onClick={()=>setTab('pickup')}>
+          <div className="ni">🏍️</div><div className="nl">Pickup</div>
+        </div>
+        <div className={`nb ${tab==='cart'?'a-g':''}`} onClick={()=>setTab('cart')}>
+          <div className="ni">🛒</div>
+          {cartCount>0&&<div className="nbadge">{cartCount}</div>}
+          <div className="nl">Cart</div>
+        </div>
+        <div className={`nb ${tab==='orders'?'a-g':''}`} onClick={()=>setTab('orders')}>
+          <div className="ni">📦</div><div className="nl">Orders</div>
+        </div>
+        <div className={`nb ${tab==='profile'?'a-g':''}`} onClick={()=>setTab('profile')}>
+          <div className="ni">👤</div><div className="nl">Me</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── SHOP PRODUCTS ───────────────────────────────────────── */
+function ShopProducts({shop,cart,onBack,onAdd}){
+  const [prods,setProds]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{
+    const unsub=db.collection('shops').doc(shop.id).collection('stock')
+      .where('selling_price','>',0)
+      .onSnapshot(s=>{setProds(s.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.quantity>0));setLoading(false);},
+        ()=>{setProds(MOCK_PRODS[shop.id]||MOCK_PRODS.ms1||[]);setLoading(false);});
+    return()=>unsub();
+  },[shop.id]);
+  const getQ=id=>cart.find(c=>c.id===id)?.quantity||0;
+  return(
+    <>
+      <div className="ph">
+        <div onClick={onBack} className="back-btn">← All Shops</div>
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <div className="sc-ico" style={{width:46,height:46,fontSize:22}}>{shop.icon||'🏪'}</div>
+          <div><div style={{fontSize:17,fontWeight:700}}>{shop.name}</div>
+               <div style={{fontSize:11,color:'var(--t2)'}}>{shop.location} · {shop.category}</div></div>
+        </div>
+      </div>
+      <div className="scr">
+        {loading&&<div className="loading"><div className="spin"/></div>}
+        <div className="pg">
+          {prods.map(p=>(
+            <div key={p.id} className="pc">
+              <div className="pi">{p.emoji||p.icon||'🛒'}</div>
+              <div className="pb">
+                <div className="pn">{p.name||p.product_name}</div>
+                <div className="pp">KSh {p.selling_price}</div>
+                {getQ(p.id)>0?(
+                  <div className="qr">
+                    <button className="qb qb-m" onClick={()=>onAdd(shop,p,-1)}>−</button>
+                    <span style={{fontWeight:700}}>{getQ(p.id)}</span>
+                    <button className="qb qb-p" onClick={()=>onAdd(shop,p,1)}>+</button>
+                  </div>
+                ):<button className="add-btn" onClick={()=>onAdd(shop,p,1)}>Add +</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── PICKUP TAB ──────────────────────────────────────────── */
+function PickupTab({user,preferredRider,onOrderPlaced,showToast}){
+  const [form,setForm]=useState({from:'',to:'',item:'',note:'',dist:1});
+  const [usePreferred,setUsePreferred]=useState(!!preferredRider);
+  const [placing,setPlacing]=useState(false);
+  const u=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const fee=calcFee(form.dist||1);
+  const riderGets=Math.round(fee*0.9);
+  const platGets=Math.round(fee*0.1);
+
+  const place=async()=>{
+    if(!form.from.trim()||!form.to.trim()||!form.item.trim()){
+      alert('Fill in pickup location, drop-off, and item description');return;
+    }
+    setPlacing(true);
+    const orderData={
+      type:'pickup',
+      customer_phone:user.phone,customer_name:user.name,
+      pickup_from:form.from.trim(),
+      delivery_address:form.to.trim(),
+      item_description:form.item.trim(),
+      special_note:form.note.trim(),
+      distance:parseFloat(form.dist)||1,
+      delivery_fee:fee,total:fee,
+      rider_earnings:riderGets,platform_earnings:platGets,
+      status:'placed',
+      rider_phone:null,rider_name:null,
+      preferred_rider:usePreferred&&preferredRider?preferredRider:null,
+      created_at:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    try{await db.collection('delivery_orders').add(orderData);}catch(e){}
+    setPlacing(false);
+    setForm({from:'',to:'',item:'',note:'',dist:1});
+    onOrderPlaced();
+  };
+
+  return(
+    <div className="pickup-screen">
+      {/* Hero */}
+      <div className="pu-hero">
+        <div className="pu-badge">🏍️ Pickup & Drop Service</div>
+        <div className="pu-title">Send Anything,<br/>Anywhere in Chemelil</div>
+        <div className="pu-sub">No shop needed. Describe what you need picked up — your rider collects and delivers.</div>
+      </div>
+
+      {/* Locations */}
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:'uppercase',color:'var(--t2)',marginBottom:8}}>
+          Route
+        </div>
+        <div className="loc-field">
+          <div className="loc-dot green"/>
+          <input type="text" placeholder="Pickup from… (e.g. Chemelil Market, kiosk near stage)"
+                 value={form.from} onChange={e=>u('from',e.target.value)}/>
+        </div>
+        <div style={{width:2,height:10,background:'var(--br2)',margin:'0 0 0 4px'}}/>
+        <div className="loc-field">
+          <div className="loc-dot red"/>
+          <input type="text" placeholder="Drop off at… (e.g. My house, near hospital gate)"
+                 value={form.to} onChange={e=>u('to',e.target.value)}/>
+        </div>
+      </div>
+
+      {/* Item description */}
+      <div className="fld">
+        <label>What should the rider pick up?</label>
+        <textarea rows="2" placeholder="e.g. 2 mandazi from Mama Safi, a parcel from the chemist, documents from the office…"
+                  value={form.item} onChange={e=>u('item',e.target.value)}/>
+      </div>
+      <div className="fld">
+        <label>Special instructions (optional)</label>
+        <input type="text" placeholder="e.g. Call me when at pickup, handle with care"
+               value={form.note} onChange={e=>u('note',e.target.value)}/>
+      </div>
+
+      {/* Distance selector */}
+      <div className="fld">
+        <label>Estimated distance (km)</label>
+        <select value={form.dist} onChange={e=>u('dist',e.target.value)}>
+          <option value={0.5}>Under 0.5 km</option>
+          <option value={1}>1 km</option>
+          <option value={2}>2 km</option>
+          <option value={3}>3 km</option>
+          <option value={5}>5 km</option>
+        </select>
+      </div>
+
+      {/* Cost estimate */}
+      <div className="est-box">
+        <div className="est-item">
+          <div className="est-val">KSh {fee}</div>
+          <div className="est-label">You Pay</div>
+        </div>
+        <div style={{width:1,height:36,background:'rgba(139,92,246,0.2)'}}/>
+        <div className="est-item">
+          <div className="est-val">KSh {riderGets}</div>
+          <div className="est-label">Rider Gets</div>
+        </div>
+        <div style={{width:1,height:36,background:'rgba(139,92,246,0.2)'}}/>
+        <div className="est-item">
+          <div className="est-val">15-25</div>
+          <div className="est-label">Min ETA</div>
+        </div>
+      </div>
+
+      {/* Favourite rider selector */}
+      {preferredRider&&(
+        <div className="fav-rider-box">
+          <div className="frb-title">⭐ Your Favourite Rider</div>
+          <div className={`fr-card ${usePreferred?'selected':''}`} onClick={()=>setUsePreferred(!usePreferred)}>
+            <div className="fr-avatar">🏍️</div>
+            <div>
+              <div className="fr-name">{preferredRider.name}</div>
+              <div className="fr-meta">{preferredRider.phone} · ⭐ {preferredRider.rating||'5.0'}</div>
+            </div>
+            <div className="fr-check">{usePreferred?'✅':'○'}</div>
+          </div>
+          <div className="use-any" onClick={()=>setUsePreferred(false)}>
+            {usePreferred?'Or assign any available rider →':'Using any available rider'}
+          </div>
+          {usePreferred&&<div style={{fontSize:11,color:'var(--t2)',marginTop:8,lineHeight:1.5}}>
+            If {preferredRider.name.split(' ')[0]} is offline, the next available rider gets the job.
+          </div>}
+        </div>
+      )}
+      {!preferredRider&&(
+        <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid var(--br)',
+                     borderRadius:10,padding:12,marginBottom:12,fontSize:12,color:'var(--t2)',lineHeight:1.6}}>
+          💡 After a great delivery, you can save your favourite rider from the Orders tab. They'll get priority for your future pickups.
+        </div>
+      )}
+
+      {/* Payment note */}
+      <div style={{background:'rgba(16,185,129,0.04)',border:'1.5px solid rgba(16,185,129,0.12)',
+                   borderRadius:11,padding:12,marginBottom:14}}>
+        <div style={{fontSize:11,fontWeight:700,color:'var(--g)',marginBottom:5,textTransform:'uppercase',letterSpacing:1}}>Payment</div>
+        <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.6}}>
+          Send <strong style={{color:'var(--g)'}}>KSh {fee}</strong> to <strong style={{color:'var(--g)'}}>📱 {MPESA}</strong> before the rider leaves the pickup point.
+          Reference: <strong>TUM{user.phone.slice(-4)}</strong>
+        </div>
+      </div>
+
+      <button className="btn btn-g" onClick={place} disabled={placing}>
+        {placing?'Placing request…':'Request Pickup → KSh '+fee}
+      </button>
+
+      <div style={{fontSize:11,color:'var(--t2)',textAlign:'center',marginTop:10,lineHeight:1.6}}>
+        A rider will be assigned within 2 minutes.<br/>
+        You can track everything in the Orders tab.
+      </div>
+    </div>
+  );
+}
+
+/* ── PROFILE TAB ─────────────────────────────────────────── */
+function ProfileTab({user,onLogout,onRemoveRider,onSave,showToast}){
+  return(
+    <div className="profile-screen">
+      <div className="profile-header">
+        <div className="profile-ava">{user.name[0].toUpperCase()}</div>
+        <div className="profile-name">{user.name}</div>
+        <div className="profile-phone">{user.phone}</div>
+      </div>
+
+      {/* Favourite Rider */}
+      <div className="section-box">
+        <div className="sb-title">⭐ Favourite Rider</div>
+        {user.preferred_rider?(
+          <div className="fav-rider-item">
+            <div className="rider-ava" style={{width:38,height:38,fontSize:18}}>🏍️</div>
+            <div>
+              <div style={{fontWeight:700}}>{user.preferred_rider.name}</div>
+              <div style={{fontSize:11,color:'var(--t2)'}}>{user.preferred_rider.phone} · ⭐ {user.preferred_rider.rating||'5.0'}</div>
+            </div>
+            <button className="remove-btn" onClick={()=>{onRemoveRider();showToast('Rider preference cleared');}}>✕</button>
+          </div>
+        ):(
+          <div style={{fontSize:12,color:'var(--t2)',lineHeight:1.6}}>
+            No favourite rider yet.<br/>
+            After a delivery, tap ☆ next to the rider in your Orders tab to save them.
+          </div>
+        )}
+      </div>
+
+      {/* Favourite Shops */}
+      <div className="section-box">
+        <div className="sb-title">🏪 Favourite Shops</div>
+        {(user.favourite_shops||[]).length===0?(
+          <div style={{fontSize:12,color:'var(--t2)'}}>No favourite shops yet. Tap ☆ on any shop to save it.</div>
+        ):(
+          <div style={{fontSize:12,color:'var(--t2)'}}>{(user.favourite_shops||[]).length} shop(s) saved · appear at top of home screen</div>
+        )}
+      </div>
+
+      {/* Account */}
+      <div className="section-box">
+        <div className="sb-title">Account</div>
+        <div style={{fontSize:13,color:'var(--t2)',marginBottom:14,lineHeight:1.7}}>
+          Role: <strong style={{color:'#fff'}}>Customer</strong><br/>
+          Phone: <strong style={{color:'#fff'}}>{user.phone}</strong>
+        </div>
+        <button className="btn btn-ghost" onClick={()=>{if(confirm('Log out?')) onLogout();}}>
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   SHOP DASHBOARD
+══════════════════════════════════════════════════════════ */
+function ShopDashboard({user,onLogout}){
+  const [tab,setTab]=useState('orders');
+  const [orders,setOrders]=useState([]);
+  const [codes,setCodes]=useState({});
+  const [delivOn,setDelivOn]=useState(false);
+  const [toast,showToast]=useToast();
+
+  useEffect(()=>{
+    db.collection('shops').doc(user.phone).get()
+      .then(d=>{if(d.exists) setDelivOn(d.data().delivery_enabled||false);}).catch(()=>{});
+  },[user.phone]);
+
+  useEffect(()=>{
+    if(tab!=='orders') return;
+    const unsub=db.collection('delivery_orders')
+      .where('shop_id','==',user.phone)
+      .where('status','in',['placed','confirmed','assigned','heading','picked','transit'])
+      .orderBy('created_at','desc')
+      .onSnapshot(s=>setOrders(s.docs.map(d=>({id:d.id,...d.data()}))),()=>{});
+    return()=>unsub();
+  },[tab,user.phone]);
+
+  const pending=orders.filter(o=>o.status==='placed').length;
+
+  const confirmPay=async(id)=>{
+    const c=(codes[id]||'').trim();
+    if(!c||c.length<5){alert('Enter M-Pesa code from your SMS');return;}
+    try{
+      await db.collection('delivery_orders').doc(id).update({
+        status:'confirmed',mpesa_code:c,
+        confirmed_at:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('✅ Confirmed! Notifying riders…');
+    }catch(e){showToast('Error — check connection');}
+  };
+
+  const toggleDeliv=async()=>{
+    const n=!delivOn;setDelivOn(n);
+    try{
+      await db.collection('shops').doc(user.phone).set({
+        delivery_enabled:n,name:user.shopName||user.name,owner_phone:user.phone,
+        location:'Chemelil',category:'General',icon:'🏪',distance_km:0.5,rating:5.0,
+        updated_at:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+      showToast(n?'✅ Delivery ON — customers can see your shop':'Delivery paused');
+    }catch(e){setDelivOn(!n);}
+  };
+
+  const statusLabel={placed:'Awaiting M-Pesa',confirmed:'Confirmed ✅',
+                     assigned:'Rider Assigned',heading:'Rider En Route',
+                     picked:'Picked Up',transit:'Out for Delivery'};
+
+  return(
+    <>
+      {toast&&<div className="toast">{toast}</div>}
+      <div className="sh">
+        <div className="sh-row">
+          <div>
+            <div style={{fontSize:18,fontWeight:700}}>{user.shopName||user.name}</div>
+            <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>CHAWKPRO × TUMANA · {user.phone}</div>
+          </div>
+          <button onClick={()=>{if(confirm('Logout?')) onLogout();}}
+                  style={{background:'none',border:'1px solid var(--br2)',borderRadius:8,
+                          padding:'5px 11px',color:'var(--t2)',fontSize:11,cursor:'pointer'}}>Out</button>
+        </div>
+        <div className="sgrid">
+          <div className="scard"><div className="sv sv-a">KSh 8,450</div><div className="slbl">Today Sales</div></div>
+          <div className="scard"><div className="sv sv-g">{orders.filter(o=>o.status==='transit').length}</div><div className="slbl">Deliveries Out</div></div>
+        </div>
+        <div className="tog-strip">
+          <div>
+            <div style={{fontWeight:700,fontSize:13,color:delivOn?'var(--g)':'var(--t2)'}}>
+              {delivOn?'🟢 Accepting Delivery Orders':'🔴 Delivery Off'}
+            </div>
+            <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>
+              {delivOn?'Customers see your shop on Tumana':'Toggle to receive Tumana orders'}
+            </div>
+          </div>
+          <div className={`tog-track ${delivOn?'on':''}`} onClick={toggleDeliv}>
+            <div className="tog-thumb"/>
+          </div>
+        </div>
+      </div>
+
+      <div className="shop-tabs">
+        {[['orders','📋 Orders'],['sales','💰 Sales'],['stock','📦 Stock'],['settings','⚙️']].map(([k,l])=>(
+          <div key={k} className={`stab ${tab===k?'act':''}`} onClick={()=>setTab(k)}>
+            {l}{k==='orders'&&pending>0&&<span style={{background:'#ef4444',color:'#fff',borderRadius:'50%',padding:'0 4px',fontSize:9,marginLeft:3}}>{pending}</span>}
+          </div>
+        ))}
+      </div>
+
+      <div className="scr">
+        {tab==='orders'&&(
+          <div style={{padding:'12px 20px 100px'}}>
+            {orders.length===0?(
+              <div className="empty"><div className="ei">📋</div>
+                <div className="et">{delivOn?'No orders yet':'Delivery is Off'}</div>
+                <div className="es">{delivOn?'Tumana orders appear here instantly':'Enable delivery above'}</div>
+              </div>
+            ):orders.map(o=>(
+              <div key={o.id} className="do-card">
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:9}}>
+                  <div>
+                    <div style={{fontWeight:700}}>#{o.id.slice(-6).toUpperCase()}</div>
+                    <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>{o.customer_name} · {o.customer_phone}</div>
+                  </div>
+                  <span className={`spill ${STATUS_PILL[o.status]?.cls||'s0'}`}>{statusLabel[o.status]||o.status}</span>
+                </div>
+                <div style={{fontSize:12,color:'var(--t2)',marginBottom:9}}>
+                  {(o.items||[]).map(i=>`${i.name} ×${i.quantity}`).join(' · ')}
+                </div>
+                <div style={{display:'flex',gap:7,marginBottom:9}}>
+                  <div style={{flex:1,background:'rgba(16,185,129,0.05)',border:'1px solid rgba(16,185,129,0.13)',borderRadius:8,padding:'8px 9px',textAlign:'center'}}>
+                    <div style={{fontSize:9,color:'var(--t2)',marginBottom:2}}>YOU EARN</div>
+                    <div style={{fontWeight:800,color:'var(--g)'}}>KSh {o.subtotal||0}</div>
+                  </div>
+                  <div style={{flex:1,background:'var(--c2)',borderRadius:8,padding:'8px 9px',textAlign:'center'}}>
+                    <div style={{fontSize:9,color:'var(--t2)',marginBottom:2}}>TOTAL PAID</div>
+                    <div style={{fontWeight:800}}>KSh {o.total||0}</div>
+                  </div>
+                </div>
+                {o.status==='placed'&&(
+                  <>
+                    <input className="mp-inp" type="text" placeholder="M-Pesa code from SMS e.g. RGH456XYZ"
+                           value={codes[o.id]||''} onChange={e=>setCodes(p=>({...p,[o.id]:e.target.value.toUpperCase()}))}/>
+                    <div className="act-row">
+                      <button className="btn-rej">❌ Reject</button>
+                      <button className="btn-cfm" onClick={()=>confirmPay(o.id)}>✅ Confirm</button>
+                    </div>
+                  </>
+                )}
+                {o.rider_name&&(
+                  <div style={{background:'rgba(139,92,246,0.06)',border:'1px solid rgba(139,92,246,0.14)',borderRadius:8,padding:9,fontSize:12,color:'var(--p)',marginTop:6}}>
+                    🏍️ {o.rider_name} · {o.rider_phone}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {tab!=='orders'&&(
+          <div className="empty" style={{paddingTop:50}}>
+            <div className="ei">{tab==='sales'?'💰':tab==='stock'?'📦':'⚙️'}</div>
+            <div className="et">{tab==='sales'?'Sales Dashboard':tab==='stock'?'Stock Management':'Settings'}</div>
+            <div className="es">Connected to your CHAWKPRO data · Coming in next update</div>
+          </div>
+        )}
+      </div>
+
+      <div className="bnav">
+        {[['orders','📋','Orders'],['sales','💰','Sales'],['stock','📦','Stock'],['settings','⚙️','Settings']].map(([k,i,l])=>(
+          <div key={k} className={`nb ${tab===k?'a-a':''}`} onClick={()=>setTab(k)}>
+            <div className="ni">{i}</div>
+            {k==='orders'&&pending>0&&<div className="nbadge">{pending}</div>}
+            <div className="nl">{l}</div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   RIDER DASHBOARD
+══════════════════════════════════════════════════════════ */
+function RiderDashboard({user,onLogout}){
+  const [online,setOnline]=useState(false);
+  const [jobs,setJobs]=useState([]);
+  const [active,setActive]=useState(null);
+  const [earned,setEarned]=useState(0);
+  const [toast,showToast]=useToast();
+
+  useEffect(()=>{
+    if(!online){setJobs([]);return;}
+    const unsub=db.collection('delivery_orders')
+      .where('status','in',['confirmed','placed'])
+      .onSnapshot(s=>{
+        const open=s.docs.map(d=>({id:d.id,...d.data()}))
+          .filter(j=>!j.rider_phone&&(j.type==='pickup'||j.type==='shop'));
+        setJobs(open);
+      },()=>{
+        // Demo jobs
+        setJobs([
+          {id:'dj1',type:'shop',shopName:"Mama Jane's",shopLocation:'Chemelil Center',customer_name:'John K.',delivery_address:'Near Hospital',distance:0.8,delivery_fee:70,total:550,status:'confirmed'},
+          {id:'dj2',type:'pickup',pickup_from:'Stage Area',delivery_address:'Chemelil Market',item_description:'2 mandazi from Mama Safi',distance:0.5,delivery_fee:60,total:60,status:'placed',customer_name:'Mary W.'},
+        ]);
+      });
+    return()=>unsub();
+  },[online]);
+
+  useEffect(()=>{
+    if(!user?.phone) return;
+    const unsub=db.collection('delivery_orders')
+      .where('rider_phone','==',user.phone)
+      .where('status','in',['assigned','heading','picked','transit'])
+      .limit(1)
+      .onSnapshot(s=>setActive(s.docs[0]?{id:s.docs[0].id,...s.docs[0].data()}:null),()=>{});
+    return()=>unsub();
+  },[user?.phone]);
+
+  const riderGets=j=>Math.round((j.delivery_fee||70)*0.9);
+
+  const accept=async(job)=>{
+    try{
+      await db.collection('delivery_orders').doc(job.id).update({
+        rider_phone:user.phone,rider_name:user.name,
+        status:'assigned',assigned_at:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){setActive({...job,status:'assigned',rider_name:user.name,rider_phone:user.phone});}
+    setJobs(p=>p.filter(j=>j.id!==job.id));
+    showToast('✅ Accepted! '+(job.type==='pickup'?`Head to ${job.pickup_from}`:`Head to ${job.shopName}`));
+  };
+
+  const advance=async(nextStatus)=>{
+    if(!active) return;
+    try{
+      await db.collection('delivery_orders').doc(active.id).update({
+        status:nextStatus,[`${nextStatus}_at`]:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){setActive(p=>({...p,status:nextStatus}));}
+    if(nextStatus==='delivered'){
+      const e=riderGets(active);
+      setEarned(p=>p+e);
+      try{await db.collection('riders').doc(user.phone).update({
+        total_earnings:firebase.firestore.FieldValue.increment(e),
+        orders_completed:firebase.firestore.FieldValue.increment(1)
+      });}catch(er){}
+      setActive(null);
+      showToast('🎉 Delivered! KSh '+e+' earned');
+    }
+  };
+
+  const progressMap={
+    shop:['assigned','heading','picked','transit','delivered'],
+    pickup:['assigned','heading','picked','transit','delivered']
+  };
+
+  const progLabels={
+    assigned:'Rider Assigned',heading:'Heading to Pickup',
+    picked:'Picked Up',transit:'Out for Delivery',delivered:'Delivered'
+  };
+
+  const toggleOnline=()=>{
+    const n=!online;setOnline(n);
+    db.collection('riders').doc(user.phone).set({online:n,name:user.name,phone:user.phone},{merge:true}).catch(()=>{});
+    showToast(n?'🟢 Online — receiving jobs':'🔴 Offline');
+  };
+
+  return(
+    <>
+      {toast&&<div className="toast">{toast}</div>}
+      <div className="rh">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div>
+            <div style={{fontSize:19,fontWeight:700}}>Hey {user.name.split(' ')[0]}! 🏍️</div>
+            <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>{user.phone} · Tumana Rider</div>
+          </div>
+          <button onClick={()=>{if(confirm('Logout?')) onLogout();}}
+                  style={{background:'none',border:'1px solid var(--br2)',borderRadius:8,
+                          padding:'5px 11px',color:'var(--t2)',fontSize:11,cursor:'pointer'}}>Out</button>
+        </div>
+        <div className="r-tog">
+          <div>
+            <div style={{fontWeight:700,color:online?'var(--g)':'var(--t2)'}}>
+              {online?'🟢 Online — Receiving Jobs':'🔴 Offline'}
+            </div>
+            <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>
+              {online?'Both shop & pickup jobs appear below':'Toggle to start earning'}
+            </div>
+          </div>
+          <div className={`tog-track ${online?'on':''}`} onClick={toggleOnline}>
+            <div className="tog-thumb"/>
+          </div>
+        </div>
+      </div>
+
+      <div className="scr">
+        <div style={{display:'flex',gap:9,padding:'12px 20px 0'}}>
+          <div className="scard" style={{flex:1}}><div className="sv sv-g">KSh {earned}</div><div className="slbl">Today</div></div>
+          <div className="scard" style={{flex:1}}><div className="sv sv-p">{jobs.length}</div><div className="slbl">Available</div></div>
+        </div>
+
+        <div style={{padding:'12px 20px 100px'}}>
+          {/* Active job */}
+          {active&&(
+            <>
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:'#ef4444',textTransform:'uppercase',marginBottom:9}}>
+                🔴 Active Delivery
+              </div>
+              <div className="active-job">
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:14}}>
+                      {active.type==='pickup'?'🏍️ Pickup':'🛒 Shop'} #{active.id.slice(-6).toUpperCase()}
+                    </div>
+                    <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>{active.shopName||active.item_description}</div>
+                  </div>
+                  <div style={{fontWeight:800,color:'var(--g)',fontSize:20}}>KSh {riderGets(active)}</div>
+                </div>
+                {/* Progress dots */}
+                <div className="prog-row">
+                  {progressMap[active.type||'shop'].map((s,i,arr)=>{
+                    const flow=progressMap[active.type||'shop'];
+                    const curIdx=flow.indexOf(active.status);
+                    const isDone=i<curIdx;const isAct=i===curIdx;const isLast=i===arr.length-1;
+                    return(
+                      <React.Fragment key={s}>
+                        <div className={`prog-dot ${isDone?'done':isAct?'act':'todo'}`}>
+                          {isDone?'✓':i+1}
+                        </div>
+                        {!isLast&&<div className={`prog-line ${isDone?'done':'todo'}`}/>}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+                <div style={{fontSize:10,color:'var(--t2)',marginBottom:10,textAlign:'center'}}>
+                  {progLabels[active.status]||active.status}
+                </div>
+                {/* Route */}
+                <div className="rr">
+                  <div className="rd rd-g">🏪</div>
+                  <div>
+                    <div style={{fontSize:10,color:'var(--g)',fontWeight:700}}>PICKUP FROM</div>
+                    <div style={{fontWeight:700}}>{active.shopName||active.pickup_from}</div>
+                    <div style={{fontSize:11,color:'var(--t2)'}}>{active.shopLocation||active.pickup_from}</div>
+                  </div>
+                </div>
+                <div className="rr">
+                  <div className="rd rd-p">📍</div>
+                  <div>
+                    <div style={{fontSize:10,color:'var(--p)',fontWeight:700}}>DELIVER TO</div>
+                    <div style={{fontWeight:700}}>{active.customer_name}</div>
+                    <div style={{fontSize:11,color:'var(--t2)'}}>{active.delivery_address}</div>
+                  </div>
+                </div>
+                {active.item_description&&(
+                  <div className="rr">
+                    <div className="rd rd-a">📝</div>
+                    <div>
+                      <div style={{fontSize:10,color:'var(--a)',fontWeight:700}}>ITEM</div>
+                      <div style={{fontSize:13}}>{active.item_description}</div>
+                    </div>
+                  </div>
+                )}
+                {/* Action buttons */}
+                {active.status==='assigned'&&<button className="btn btn-g" style={{marginTop:10}} onClick={()=>advance('heading')}>🔍 Heading to Pickup</button>}
+                {active.status==='heading'&&<button className="btn btn-g" style={{marginTop:10}} onClick={()=>advance('picked')}>📦 Picked Up</button>}
+                {active.status==='picked'&&<button className="btn btn-g" style={{marginTop:10}} onClick={()=>advance('transit')}>🚴 Out for Delivery</button>}
+                {active.status==='transit'&&<button className="btn btn-g" style={{marginTop:10,background:'var(--gd)'}} onClick={()=>advance('delivered')}>✅ Mark Delivered</button>}
+              </div>
+            </>
+          )}
+
+          {/* Available jobs */}
+          {!online?(
+            <div className="empty"><div className="ei">😴</div>
+              <div className="et">You're Offline</div>
+              <div className="es">Toggle Online above to see shop deliveries and pickup requests</div></div>
+          ):jobs.length===0&&!active?(
+            <div className="empty"><div className="ei">⏳</div>
+              <div className="et">No jobs yet</div>
+              <div className="es">Shop deliveries and pickup requests appear here instantly when confirmed</div></div>
+          ):(
+            <>
+              {jobs.length>0&&<div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,color:'var(--p)',textTransform:'uppercase',marginBottom:9}}>
+                🔔 {jobs.length} Available Job{jobs.length!==1?'s':''}
+              </div>}
+              {jobs.map(job=>(
+                <div key={job.id} className="job-card">
+                  {job.type==='pickup'
+                    ?<div className="pu-tag">PICKUP REQUEST</div>
+                    :<div className="new-badge">SHOP DELIVERY</div>}
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:11,paddingRight:90}}>
+                    <div>
+                      <div style={{fontWeight:700}}>{job.type==='pickup'?'Pickup & Drop':'Shop Delivery'}</div>
+                      <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>#{job.id.slice(-6).toUpperCase()}</div>
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                      <div style={{fontSize:22,fontWeight:800,color:'var(--g)'}}>KSh {riderGets(job)}</div>
+                      <div style={{fontSize:9,color:'var(--t2)'}}>your cut</div>
+                    </div>
+                  </div>
+                  {job.type==='shop'&&(
+                    <div className="rr">
+                      <div className="rd rd-g">🏪</div>
+                      <div><div style={{fontSize:10,color:'var(--g)',fontWeight:700}}>PICKUP</div>
+                           <div style={{fontWeight:700}}>{job.shopName}</div>
+                           <div style={{fontSize:11,color:'var(--t2)'}}>{job.shopLocation}</div></div>
+                    </div>
+                  )}
+                  {job.type==='pickup'&&(
+                    <div className="rr">
+                      <div className="rd rd-a">📍</div>
+                      <div><div style={{fontSize:10,color:'var(--a)',fontWeight:700}}>PICKUP FROM</div>
+                           <div style={{fontWeight:700}}>{job.pickup_from}</div>
+                           <div style={{fontSize:11,color:'var(--t2)'}}>{job.item_description}</div></div>
+                    </div>
+                  )}
+                  <div className="rr">
+                    <div className="rd rd-p">📍</div>
+                    <div><div style={{fontSize:10,color:'var(--p)',fontWeight:700}}>DELIVER TO</div>
+                         <div style={{fontWeight:700}}>{job.customer_name}</div>
+                         <div style={{fontSize:11,color:'var(--t2)'}}>{job.delivery_address}</div></div>
+                  </div>
+                  <div className="earn-hl">
+                    <span style={{fontSize:12,color:'var(--t2)'}}>{job.distance}km · KSh {job.delivery_fee} fee</span>
+                    <span style={{fontWeight:800,color:'var(--g)'}}>You: KSh {riderGets(job)}</span>
+                  </div>
+                  {job.preferred_rider?.phone===user.phone&&(
+                    <div style={{background:'rgba(251,191,36,0.08)',border:'1px solid rgba(251,191,36,0.2)',
+                                 borderRadius:8,padding:'7px 10px',fontSize:11,color:'var(--a)',marginBottom:8}}>
+                      ⭐ This customer chose you as their favourite rider!
+                    </div>
+                  )}
+                  <div className="jbtns">
+                    <button className="btn-dec">❌ Decline</button>
+                    <button className="btn-acc" onClick={()=>accept(job)}>✅ Accept</button>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="bnav">
+        <div className="nb a-p"><div className="ni">🏍️</div>
+          {jobs.length>0&&<div className="nbadge">{jobs.length}</div>}
+          <div className="nl">Jobs</div></div>
+        <div className="nb"><div className="ni">💰</div><div className="nl">Earnings</div></div>
+      </div>
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   ROOT
+══════════════════════════════════════════════════════════ */
+function Root(){
+  const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('tumana_user'));}catch{return null;}});
+  const login=u=>{setUser(u);localStorage.setItem('tumana_user',JSON.stringify(u));};
+  const logout=()=>{setUser(null);localStorage.removeItem('tumana_user');};
+  const accent=!user?'var(--g)':user.role==='shop'?'var(--a)':user.role==='rider'?'var(--p)':'var(--g)';
+  return(
+    <div className="app">
+      <div className="sb">
+        <span>9:41</span>
+        <span style={{color:accent}}>
+          {user?user.role==='shop'?'🏪 CHAWKPRO':user.role==='rider'?'🏍️ RIDER':'🛍️ TUMANA':'CHAWKPRO × TUMANA'}
+        </span>
+        <span>📶 🔋</span>
+      </div>
+      {!user&&<div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}><RoleScreen onLogin={login}/></div>}
+      {user?.role==='customer'&&<CustomerApp user={user} onLogout={logout}/>}
+      {user?.role==='shop'&&<ShopDashboard user={user} onLogout={logout}/>}
+      {user?.role==='rider'&&<RiderDashboard user={user} onLogout={logout}/>}
+    </div>
+  );
+}
+ReactDOM.render(<Root/>,document.getElementById('root'));
+</script>
+</body>
+</html>
