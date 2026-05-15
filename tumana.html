@@ -656,9 +656,14 @@ function CustomerApp({user,onLogout}){
     setOrdersLoading(true);
     const unsub=db.collection('delivery_orders')
       .where('customer_phone','==',user.phone)
-      .orderBy('created_at','desc').limit(30)
-      .onSnapshot(s=>{setOrders(s.docs.map(d=>({id:d.id,...d.data()})));setOrdersLoading(false);},
-        ()=>{setOrdersLoading(false);});
+      .limit(30)
+      .onSnapshot(s=>{
+        // Sort client-side to avoid needing Firestore index
+        const sorted=s.docs.map(d=>({id:d.id,...d.data()}))
+          .sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0));
+        setOrders(sorted);
+        setOrdersLoading(false);
+      },()=>{setOrdersLoading(false);});
     return()=>unsub();
   },[tab,user.phone]);
 
@@ -698,7 +703,7 @@ function CustomerApp({user,onLogout}){
       rider_earnings:bk.riderGets,platform_earnings:bk.platGets,
       distance:cart[0]?.shopDist||0.5,
       status:'placed',rider_phone:null,rider_name:null,
-      preferred_rider:userData.preferred_rider||null,
+      preferred_rider:null,
       created_at:firebase.firestore.FieldValue.serverTimestamp()
     };
     try{await db.collection('delivery_orders').add(orderData);}catch(e){}
@@ -726,7 +731,7 @@ function CustomerApp({user,onLogout}){
     showToast('Rider preference cleared');
   };
 
-  /* ── Mark favourite rider after delivery ── */
+  /* ── Save favourite rider (for pickup priority only, not shop orders) ── */
   const favRiderAfterDelivery=(order)=>{
     if(!order.rider_name||!order.rider_phone) return;
     setPreferredRider({name:order.rider_name,phone:order.rider_phone,rating:order.rider_rating||'5.0'});
@@ -956,11 +961,16 @@ function CustomerApp({user,onLogout}){
                         <div style={{fontWeight:700,fontSize:13}}>{o.rider_name}</div>
                         <div style={{fontSize:11,color:'var(--t2)'}}>{o.rider_phone}</div>
                       </div>
-                      <button className="fav-star-btn"
-                              title="Set as favourite rider"
-                              onClick={()=>favRiderAfterDelivery(o)}>
-                        {userData.preferred_rider?.phone===o.rider_phone?'⭐':'☆'}
-                      </button>
+                      <div style={{textAlign:'center'}}>
+                        <button className="fav-star-btn"
+                                title="Save as favourite rider for future pickups"
+                                onClick={()=>favRiderAfterDelivery(o)}>
+                          {userData.preferred_rider?.phone===o.rider_phone?'⭐':'☆'}
+                        </button>
+                        <div style={{fontSize:9,color:'var(--t2)',marginTop:2}}>
+                          {userData.preferred_rider?.phone===o.rider_phone?'Saved':'Save'}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1053,7 +1063,6 @@ function ShopProducts({shop,cart,onBack,onAdd}){
 /* ── PICKUP TAB ──────────────────────────────────────────── */
 function PickupTab({user,preferredRider,onOrderPlaced,showToast}){
   const [form,setForm]=useState({from:'',to:'',item:'',note:'',dist:1});
-  const [usePreferred,setUsePreferred]=useState(!!preferredRider);
   const [placing,setPlacing]=useState(false);
   const u=(k,v)=>setForm(p=>({...p,[k]:v}));
   const fee=calcFee(form.dist||1);
@@ -1065,6 +1074,9 @@ function PickupTab({user,preferredRider,onOrderPlaced,showToast}){
       alert('Fill in pickup location, drop-off, and item description');return;
     }
     setPlacing(true);
+    // Fully auto-assigned — customer never manually picks a rider.
+    // If a favourite rider is saved, they silently get priority 
+    // notification first. If they don't accept, all riders are notified.
     const orderData={
       type:'pickup',
       customer_phone:user.phone,customer_name:user.name,
@@ -1077,7 +1089,7 @@ function PickupTab({user,preferredRider,onOrderPlaced,showToast}){
       rider_earnings:riderGets,platform_earnings:platGets,
       status:'placed',
       rider_phone:null,rider_name:null,
-      preferred_rider:usePreferred&&preferredRider?preferredRider:null,
+      preferred_rider:preferredRider||null,
       created_at:firebase.firestore.FieldValue.serverTimestamp()
     };
     try{await db.collection('delivery_orders').add(orderData);}catch(e){}
@@ -1155,30 +1167,19 @@ function PickupTab({user,preferredRider,onOrderPlaced,showToast}){
         </div>
       </div>
 
-      {/* Favourite rider selector */}
+      {/* Favourite rider info — shown only if saved, purely informational */}
       {preferredRider&&(
-        <div className="fav-rider-box">
-          <div className="frb-title">⭐ Your Favourite Rider</div>
-          <div className={`fr-card ${usePreferred?'selected':''}`} onClick={()=>setUsePreferred(!usePreferred)}>
-            <div className="fr-avatar">🏍️</div>
-            <div>
-              <div className="fr-name">{preferredRider.name}</div>
-              <div className="fr-meta">{preferredRider.phone} · ⭐ {preferredRider.rating||'5.0'}</div>
+        <div style={{background:'rgba(16,185,129,0.04)',border:'1px solid rgba(16,185,129,0.12)',
+                     borderRadius:10,padding:12,marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
+          <div style={{fontSize:20}}>⭐</div>
+          <div>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--g)'}}>
+              {preferredRider.name} gets first chance at this pickup
             </div>
-            <div className="fr-check">{usePreferred?'✅':'○'}</div>
+            <div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>
+              Auto-assigned. If unavailable, next available rider is notified.
+            </div>
           </div>
-          <div className="use-any" onClick={()=>setUsePreferred(false)}>
-            {usePreferred?'Or assign any available rider →':'Using any available rider'}
-          </div>
-          {usePreferred&&<div style={{fontSize:11,color:'var(--t2)',marginTop:8,lineHeight:1.5}}>
-            If {preferredRider.name.split(' ')[0]} is offline, the next available rider gets the job.
-          </div>}
-        </div>
-      )}
-      {!preferredRider&&(
-        <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid var(--br)',
-                     borderRadius:10,padding:12,marginBottom:12,fontSize:12,color:'var(--t2)',lineHeight:1.6}}>
-          💡 After a great delivery, you can save your favourite rider from the Orders tab. They'll get priority for your future pickups.
         </div>
       )}
 
@@ -1276,11 +1277,23 @@ function ShopDashboard({user,onLogout}){
 
   useEffect(()=>{
     if(tab!=='orders') return;
+    // Simple query — filter client-side to avoid index errors
     const unsub=db.collection('delivery_orders')
       .where('shop_id','==',user.phone)
-      .where('status','in',['placed','confirmed','assigned','heading','picked','transit'])
       .orderBy('created_at','desc')
-      .onSnapshot(s=>setOrders(s.docs.map(d=>({id:d.id,...d.data()}))),()=>{});
+      .limit(50)
+      .onSnapshot(s=>{
+        const all=s.docs.map(d=>({id:d.id,...d.data()}));
+        // Show active orders (not delivered/rejected)
+        setOrders(all.filter(o=>!['delivered','rejected','cancelled'].includes(o.status)));
+      },()=>{
+        // Fallback without orderBy if index missing
+        db.collection('delivery_orders')
+          .where('shop_id','==',user.phone)
+          .limit(50)
+          .onSnapshot(s=>setOrders(s.docs.map(d=>({id:d.id,...d.data()}))
+            .filter(o=>!['delivered','rejected'].includes(o.status))),()=>{});
+      });
     return()=>unsub();
   },[tab,user.phone]);
 
@@ -1455,11 +1468,16 @@ function RiderDashboard({user,onLogout}){
 
   useEffect(()=>{
     if(!user?.phone) return;
+    // Simple query — no composite index needed
     const unsub=db.collection('delivery_orders')
       .where('rider_phone','==',user.phone)
-      .where('status','in',['assigned','heading','picked','transit'])
-      .limit(1)
-      .onSnapshot(s=>setActive(s.docs[0]?{id:s.docs[0].id,...s.docs[0].data()}:null),()=>{});
+      .limit(5)
+      .onSnapshot(s=>{
+        // Filter active ones client-side to avoid index error
+        const active=s.docs.map(d=>({id:d.id,...d.data()}))
+          .find(d=>['assigned','heading','picked','transit'].includes(d.status));
+        setActive(active||null);
+      },()=>setActive(null));
     return()=>unsub();
   },[user?.phone]);
 
@@ -1699,13 +1717,74 @@ function RiderDashboard({user,onLogout}){
 }
 
 /* ══════════════════════════════════════════════════════════
-   ROOT
+   ROOT — with crash protection & reset
 ══════════════════════════════════════════════════════════ */
 function Root(){
-  const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('tumana_user'));}catch{return null;}});
-  const login=u=>{setUser(u);localStorage.setItem('tumana_user',JSON.stringify(u));};
-  const logout=()=>{setUser(null);localStorage.removeItem('tumana_user');};
+  const [user,setUser]=useState(()=>{
+    try{
+      const saved=localStorage.getItem('tumana_user');
+      if(!saved) return null;
+      const parsed=JSON.parse(saved);
+      // Validate — must have role and phone
+      if(!parsed||!parsed.role||!parsed.phone) return null;
+      return parsed;
+    }catch(e){
+      localStorage.removeItem('tumana_user');
+      return null;
+    }
+  });
+  const [crashed,setCrashed]=useState(false);
+
+  const login=u=>{
+    try{
+      setUser(u);
+      localStorage.setItem('tumana_user',JSON.stringify(u));
+      setCrashed(false);
+    }catch(e){}
+  };
+
+  const logout=()=>{
+    setUser(null);
+    setCrashed(false);
+    try{localStorage.removeItem('tumana_user');}catch(e){}
+  };
+
+  const hardReset=()=>{
+    try{localStorage.clear();}catch(e){}
+    setUser(null);
+    setCrashed(false);
+  };
+
+  // Catch render errors
+  useEffect(()=>{
+    const handler=(e)=>{
+      console.error('App error:',e);
+      setCrashed(true);
+    };
+    window.addEventListener('error',handler);
+    return()=>window.removeEventListener('error',handler);
+  },[]);
+
   const accent=!user?'var(--g)':user.role==='shop'?'var(--a)':user.role==='rider'?'var(--p)':'var(--g)';
+
+  // BLACK SCREEN PROTECTION
+  if(crashed){
+    return(
+      <div className="app" style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:32,gap:16}}>
+        <div style={{fontSize:48}}>⚠️</div>
+        <div style={{fontWeight:700,fontSize:18,textAlign:'center'}}>Something went wrong</div>
+        <div style={{fontSize:13,color:'var(--t2)',textAlign:'center',lineHeight:1.6}}>Tap Reset to go back to the start screen</div>
+        <button className="btn btn-g" style={{marginTop:8}} onClick={hardReset}>🔄 Reset App</button>
+      </div>
+    );
+  }
+
+  // If user exists but role is unknown — reset
+  if(user && !['customer','shop','rider'].includes(user.role)){
+    hardReset();
+    return null;
+  }
+
   return(
     <div className="app">
       <div className="sb">
@@ -1713,7 +1792,7 @@ function Root(){
         <span style={{color:accent}}>
           {user?user.role==='shop'?'🏪 CHAWKPRO':user.role==='rider'?'🏍️ RIDER':'🛍️ TUMANA':'CHAWKPRO × TUMANA'}
         </span>
-        <span>📶 🔋</span>
+        <span style={{cursor:'pointer',fontSize:11,color:'var(--t3)'}} onClick={hardReset}>↺</span>
       </div>
       {!user&&<div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}><RoleScreen onLogin={login}/></div>}
       {user?.role==='customer'&&<CustomerApp user={user} onLogout={logout}/>}
