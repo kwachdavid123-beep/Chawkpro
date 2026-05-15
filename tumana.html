@@ -409,6 +409,22 @@ body{font-family:'Space Grotesk',sans-serif;background:#08080c;color:#fff}
 </head>
 <body>
 <div id="root"></div>
+<div id="err" style="display:none;padding:24px;font-family:monospace;font-size:13px;color:#ff6b6b;background:#1a0000;min-height:100vh"></div>
+<script>
+window.onerror=function(msg,src,line,col,err){
+  document.getElementById('root').style.display='none';
+  var d=document.getElementById('err');
+  d.style.display='block';
+  d.innerHTML='<b style="color:#ff4444;font-size:16px">App Error</b><br><br>'+
+    '<b>Message:</b> '+msg+'<br>'+
+    '<b>Line:</b> '+line+'<br><br>'+
+    '<b>Fix:</b> Clear browser data and reload<br><br>'+
+    '<button onclick="localStorage.clear();location.reload()" '+
+    'style="background:#10b981;border:none;color:#000;padding:12px 24px;'+
+    'border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">'+
+    '🔄 Clear & Reload</button>';
+};
+</script>
 <script>
 /* ─── FIREBASE CONFIG (chawkpro1) ────────────────────────── */
 const firebaseConfig = {
@@ -697,7 +713,7 @@ function CustomerApp({user,onLogout}){
       customer_phone:user.phone,customer_name:user.name,
       shop_id:shop.id||cart[0]?.shopId,shopName:shop.name||cart[0]?.shopName,
       shop_location:shop.location||'',
-      delivery_address:`${user.name}'s location`,
+      delivery_address:user.name+"'s location",
       items:cart.map(i=>({id:i.id,name:i.name||i.product_name,quantity:i.quantity,price:i.selling_price})),
       subtotal:bk.sub,delivery_fee:bk.fee,total:bk.total,
       rider_earnings:bk.riderGets,platform_earnings:bk.platGets,
