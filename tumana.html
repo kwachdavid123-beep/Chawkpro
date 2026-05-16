@@ -666,64 +666,146 @@ function saveFavRider(name,phone){
 function showPickup(){
   setNav('customer','pickup');
   const pr=USER.preferred_rider;
+  // Distance options with fares pre-calculated
+  const distOpts=[
+    {km:.5,label:'< 0.5 km',fee:calcFee(.5)},
+    {km:1,label:'1 km',fee:calcFee(1)},
+    {km:2,label:'2 km',fee:calcFee(2)},
+    {km:3,label:'3 km',fee:calcFee(3)},
+    {km:5,label:'5 km',fee:calcFee(5)},
+    {km:8,label:'8 km',fee:calcFee(8)},
+    {km:10,label:'10 km',fee:calcFee(10)},
+  ];
+  const defaultFee=calcFee(1);
   document.getElementById('main').innerHTML=`
-    <div style="padding:16px 18px 100px">
-      <div class="pu-hero">
-        <div class="pu-badge">🏍️ Pickup & Drop Service</div>
-        <div style="font-size:19px;font-weight:800;margin-bottom:4px">Send Anything in Chemelil</div>
-        <div style="font-size:12px;color:var(--t2);line-height:1.5">No shop needed. Describe what to pick up — rider collects and delivers.</div>
+    <div style="padding:0 0 100px">
+      <!-- UBER-STYLE HEADER -->
+      <div style="background:linear-gradient(180deg,#0d0d0f,var(--bg));padding:20px 18px 16px;border-bottom:1px solid var(--br)">
+        <div style="font-size:22px;font-weight:800;margin-bottom:4px">Where to?</div>
+        <div style="font-size:13px;color:var(--t2)">Enter pickup and drop-off location</div>
       </div>
-      <div style="margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:7px">Route</div>
-        <div class="loc-f"><div class="ldot ldot-g"></div><input type="text" id="pu-from" placeholder="Pickup from… (e.g. Chemelil Market)"/></div>
-        <div style="width:2px;height:8px;background:var(--br2);margin:0 0 0 4px"></div>
-        <div class="loc-f"><div class="ldot ldot-r"></div><input type="text" id="pu-to" placeholder="Drop off at… (e.g. My house)"/></div>
+
+      <!-- LOCATION INPUTS -->
+      <div style="padding:16px 18px;background:var(--bg)">
+        <!-- FROM -->
+        <div style="display:flex;gap:12px;align-items:center;background:var(--c);border:1.5px solid var(--br2);border-radius:14px;padding:14px 16px;margin-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0">
+            <div style="width:12px;height:12px;border-radius:50%;background:var(--g);box-shadow:0 0 0 3px rgba(16,185,129,.2)"></div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Pickup</div>
+            <input type="text" id="pu-from" placeholder="Enter pickup location…" 
+              style="background:transparent;border:none;font-size:16px;color:#fff;font-family:Space Grotesk,sans-serif;width:100%;outline:none"
+              autocomplete="off"/>
+          </div>
+        </div>
+        <!-- LINE -->
+        <div style="width:2px;height:10px;background:var(--br2);margin:0 0 0 22px"></div>
+        <!-- TO -->
+        <div style="display:flex;gap:12px;align-items:center;background:var(--c);border:1.5px solid var(--br2);border-radius:14px;padding:14px 16px;margin-top:4px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0">
+            <div style="width:12px;height:12px;border-radius:3px;background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.2)"></div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Drop-off</div>
+            <input type="text" id="pu-to" placeholder="Enter destination…"
+              style="background:transparent;border:none;font-size:16px;color:#fff;font-family:Space Grotesk,sans-serif;width:100%;outline:none"
+              autocomplete="off"/>
+          </div>
+        </div>
       </div>
-      <div class="fld"><label>What should rider pick up?</label><textarea rows="2" id="pu-item" placeholder="e.g. 2 mandazi from Mama Safi, parcel from chemist"></textarea></div>
-      <div class="fld"><label>Special instructions (optional)</label><input type="text" id="pu-note" placeholder="e.g. Call me when there"/></div>
-      <div class="fld"><label>Estimated distance</label>
-        <select id="pu-dist">
-          <option value="0.5">Under 0.5 km</option>
-          <option value="1" selected>1 km</option>
-          <option value="2">2 km</option>
-          <option value="3">3 km</option>
-          <option value="5">5 km</option>
-        </select>
+
+      <!-- FARE OPTIONS (tap to select distance) -->
+      <div style="padding:0 18px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Select Distance</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="dist-options">
+          ${distOpts.map((d,i)=>`
+            <div class="dist-opt ${i===1?'selected':''}" data-km="${d.km}" data-fee="${d.fee}" onclick="selectDist(this,${d.km},${d.fee})"
+              style="display:flex;justify-content:space-between;align-items:center;background:${i===1?'rgba(16,185,129,.08)':'var(--c)'};border:1.5px solid ${i===1?'var(--g)':'var(--br)'};border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="font-size:22px">🏍️</div>
+                <div>
+                  <div style="font-weight:700;font-size:14px">${d.label}</div>
+                  <div style="font-size:11px;color:var(--t2)">~${Math.round(d.km*4+10)}-${Math.round(d.km*5+15)} min</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:18px;font-weight:800;color:${i===1?'var(--g)':'#fff'}">KSh ${d.fee}</div>
+                <div style="font-size:10px;color:var(--t2)">Rider: KSh ${Math.round(d.fee*.9)}</div>
+              </div>
+            </div>`).join('')}
+        </div>
       </div>
-      <div class="est-box" id="pu-est">
-        <div class="est-it"><div class="est-v" id="pu-fee">KSh 70</div><div class="est-l">You Pay</div></div>
-        <div class="est-div"></div>
-        <div class="est-it"><div class="est-v" id="pu-rider">KSh 63</div><div class="est-l">Rider Gets</div></div>
-        <div class="est-div"></div>
-        <div class="est-it"><div class="est-v">15-25</div><div class="est-l">Min ETA</div></div>
+
+      <!-- SELECTED FARE SUMMARY -->
+      <div style="margin:0 18px 16px;background:rgba(16,185,129,.05);border:1.5px solid rgba(16,185,129,.15);border-radius:12px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;color:var(--t2)">Your fare</span>
+          <span style="font-size:22px;font-weight:800;color:var(--g)" id="pu-fee-display">KSh ${defaultFee}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.6">
+          Send <strong style="color:var(--g)" id="pu-fee-pay">KSh ${defaultFee}</strong> 
+          to 📱 <strong style="color:var(--g)">${MPESA}</strong> 
+          after booking. Ref: <strong>TUM${USER.phone.slice(-4)}</strong>
+        </div>
       </div>
-      ${pr?`<div style="background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.12);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">⭐</div><div><div style="font-size:12px;font-weight:700;color:var(--g)">${pr.name} gets first chance</div><div style="font-size:11px;color:var(--t2);margin-top:2px">Auto-assigned. If unavailable, next rider gets the job.</div></div></div>`:''}
-      <div style="background:rgba(16,185,129,.04);border:1.5px solid rgba(16,185,129,.12);border-radius:10px;padding:12px;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;color:var(--g);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px">Payment</div>
-        <div style="font-size:12px;color:var(--t2);line-height:1.6" id="pu-pay-note">Send KSh 70 to 📱 ${MPESA} before rider leaves pickup. Ref: TUM${USER.phone.slice(-4)}</div>
+
+      ${pr?`<div style="margin:0 18px 16px;background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.12);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">⭐</div><div><div style="font-size:12px;font-weight:700;color:var(--g)">${pr.name} gets first chance</div><div style="font-size:11px;color:var(--t2);margin-top:2px">Auto-assigned — no action needed from you</div></div></div>`:''}
+
+      <div style="padding:0 18px">
+        <button class="btn btn-g" style="font-size:16px;padding:18px" onclick="placePickup()">
+          🏍️ Request Rider
+        </button>
+        <div style="font-size:11px;color:var(--t2);text-align:center;margin-top:10px">
+          Rider assigned within 2 minutes · Track in Orders tab
+        </div>
       </div>
-      <button class="btn btn-g" onclick="placePickup()">Request Pickup</button>
-      <div style="font-size:11px;color:var(--t2);text-align:center;margin-top:10px">Rider assigned within 2 minutes. Track in Orders tab.</div>
     </div>`;
-  document.getElementById('pu-dist').addEventListener('change',function(){
-    const fee=calcFee(this.value);
-    document.getElementById('pu-fee').textContent='KSh '+fee;
-    document.getElementById('pu-rider').textContent='KSh '+Math.round(fee*.9);
-    document.getElementById('pu-pay-note').textContent='Send KSh '+fee+' to 📱 '+MPESA+' before rider leaves pickup. Ref: TUM'+USER.phone.slice(-4);
-  });
+
+  // Store selected dist
+  window._puDist=1;
+  window._puFee=defaultFee;
 }
+
+function selectDist(el,km,fee){
+  // Deselect all
+  document.querySelectorAll('.dist-opt').forEach(d=>{
+    d.style.background='var(--c)';
+    d.style.borderColor='var(--br)';
+    d.querySelector('div:last-child div:first-child').style.color='#fff';
+  });
+  // Select clicked
+  el.style.background='rgba(16,185,129,.08)';
+  el.style.borderColor='var(--g)';
+  el.querySelector('div:last-child div:first-child').style.color='var(--g)';
+  // Update summary
+  document.getElementById('pu-fee-display').textContent='KSh '+fee;
+  document.getElementById('pu-fee-pay').textContent='KSh '+fee;
+  window._puDist=km;
+  window._puFee=fee;
+}
+
 async function placePickup(){
   const from=(document.getElementById('pu-from').value||'').trim();
   const to=(document.getElementById('pu-to').value||'').trim();
-  const item=(document.getElementById('pu-item').value||'').trim();
-  const note=(document.getElementById('pu-note').value||'').trim();
-  const dist=parseFloat(document.getElementById('pu-dist').value)||1;
-  if(!from||!to||!item){toast('Fill in pickup location, drop-off, and item description');return;}
-  const fee=calcFee(dist);
+  if(!from){toast('Enter pickup location');document.getElementById('pu-from').focus();return;}
+  if(!to){toast('Enter drop-off destination');document.getElementById('pu-to').focus();return;}
+  const dist=window._puDist||1;
+  const fee=window._puFee||calcFee(1);
   try{
-    await db.collection('delivery_orders').add({type:'pickup',customer_phone:USER.phone,customer_name:USER.name,pickup_from:from,delivery_address:to,item_description:item,special_note:note,distance:dist,delivery_fee:fee,total:fee,rider_earnings:Math.round(fee*.9),platform_earnings:Math.round(fee*.1),status:'placed',rider_phone:null,rider_name:null,preferred_rider:USER.preferred_rider||null,created_at:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('delivery_orders').add({
+      type:'pickup',
+      customer_phone:USER.phone,customer_name:USER.name,
+      pickup_from:from,delivery_address:to,
+      item_description:'Pickup: '+from+' → '+to,
+      distance:dist,delivery_fee:fee,total:fee,
+      rider_earnings:Math.round(fee*.9),platform_earnings:Math.round(fee*.1),
+      status:'placed',rider_phone:null,rider_name:null,
+      preferred_rider:USER.preferred_rider||null,
+      created_at:firebase.firestore.FieldValue.serverTimestamp()
+    });
   }catch(e){}
-  toast('✅ Pickup requested! Rider being assigned');
+  toast('✅ Rider requested! Tracking in Orders');
   showOrders();
 }
 
