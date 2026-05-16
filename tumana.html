@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>CHAWKPRO × TUMANA</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3/dist/htm.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#08080c}
+body{font-family:'Space Grotesk',sans-serif;color:#fff}
+#root{height:100%;display:flex;flex-direction:column}
+:root{
+  --g:#10b981;--g2:#059669;--gd:linear-gradient(135deg,#10b981,#059669);
+  --a:#f59e0b;--ad:linear-gradient(135deg,#f59e0b,#d97706);
+  --p:#8b5cf6;--pd:linear-gradient(135deg,#8b5cf6,#7c3aed);
+  --bg:#08080c;--c:#111116;--c2:#1a1a22;
+  --br:rgba(255,255,255,0.07);--br2:rgba(255,255,255,0.13);
+  --t2:rgba(255,255,255,0.45);--t3:rgba(255,255,255,0.2);
+}
+.app{width:100%;max-width:430px;height:100%;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.8)}
+.scr{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scr::-webkit-scrollbar{display:none}
+.sb{background:#000;height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:11px;font-weight:700;color:var(--t2);flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:34px;height:34px;border:3px solid var(--br);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+.rs{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.rs-hero{padding:28px 20px 16px;flex-shrink:0}
+.rs-eye{font-size:10px;font-weight:700;letter-spacing:3px;color:var(--t2);text-transform:uppercase;margin-bottom:12px}
+.rs-h{font-size:30px;font-weight:800;line-height:1.1;margin-bottom:6px}
+.rs-sub{font-size:13px;color:var(--t2);line-height:1.5}
+.rs-tabs{display:flex;margin:0 20px 16px;background:var(--c);border-radius:12px;padding:4px;gap:4px;flex-shrink:0}
+.rt{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;color:var(--t2)}
+.rt-g{background:var(--gd);color:#000}
+.rt-a{background:var(--ad);color:#000}
+.rs-cards{flex:1;overflow-y:auto;padding:0 20px 20px;display:flex;flex-direction:column;gap:10px}
+.rc{background:var(--c);border:1.5px solid var(--br);border-radius:15px;padding:16px;cursor:pointer;transition:.15s;position:relative}
+.rc:active{transform:scale(.98)}
+.rc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.rc-ico{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ico-g{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)}
+.ico-a{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)}
+.ico-p{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2)}
+.rc-name{font-size:16px;font-weight:700;margin-bottom:2px}
+.rc-sub{font-size:11px;color:var(--t2)}
+.rc-perks{display:flex;flex-direction:column;gap:4px}
+.perk{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.rc-arr{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--t3)}
+.form-wrap{padding:20px;overflow-y:auto;flex:1}
+.bk{display:flex;align-items:center;gap:6px;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:20px;width:fit-content}
+.fi{font-size:40px;margin-bottom:10px}
+.ft{font-size:22px;font-weight:700;margin-bottom:6px}
+.fs{font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.5}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--c2);border:1.5px solid var(--br2);border-radius:10px;padding:13px;font-size:15px;color:#fff;font-family:'Space Grotesk',sans-serif}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--g)}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--t3);font-size:13px}
+.fld select option{background:#1a1a22}
+.btn{width:100%;padding:15px;border-radius:10px;border:none;font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn-g{background:var(--gd);color:#000;box-shadow:0 4px 16px rgba(16,185,129,.3)}
+.btn-a{background:var(--ad);color:#000}
+.btn-p{background:var(--pd);color:#fff}
+.btn-ghost{background:transparent;border:1.5px solid var(--br2);color:var(--t2)}
+.divd{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--t3);font-size:11px}
+.divd::before,.divd::after{content:'';flex:1;height:1px;background:var(--br)}
+.hdr{padding:14px 18px;flex-shrink:0;border-bottom:1px solid var(--br)}
+.hdr-row{display:flex;justify-content:space-between;align-items:center}
+.loc-pill{display:flex;align-items:center;gap:5px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);padding:7px 12px;border-radius:20px;font-size:12px;font-weight:700;color:var(--g)}
+.ava{width:34px;height:34px;border-radius:50%;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;font-weight:700;color:#000}
+.srch{background:var(--c);border:1.5px solid var(--br2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--t3);margin-top:10px;display:flex;gap:6px}
+.sl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);padding:12px 18px 6px;flex-shrink:0}
+.favs{display:flex;gap:10px;overflow-x:auto;padding:0 18px 10px;scrollbar-width:none}
+.favs::-webkit-scrollbar{display:none}
+.fav-it{min-width:60px;text-align:center;cursor:pointer;flex-shrink:0}
+.fav-ring{width:52px;height:52px;border-radius:50%;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 5px;border:2px solid rgba(16,185,129,.3);transition:.15s}
+.fav-nm{font-size:10px;font-weight:600;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;margin:0 auto}
+.cnt{padding:4px 18px 16px}
+.sc{background:var(--c);border:1.5px solid var(--br);border-radius:14px;padding:13px;margin-bottom:10px;cursor:pointer;transition:.15s}
+.sc:active{transform:scale(.98)}
+.sc-row{display:flex;gap:10px;align-items:center}
+.sc-ico{width:50px;height:50px;border-radius:11px;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:2px}
+.sc-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{background:rgba(255,255,255,.04);border:1px solid var(--br2);padding:3px 8px;border-radius:20px;font-size:11px;color:var(--t2);font-weight:600}
+.chip-g{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.18);color:var(--g)}
+.ph{padding:12px 18px;flex-shrink:0;border-bottom:1px solid var(--br)}
+.back-btn{display:inline-flex;align-items:center;gap:5px;background:var(--c2);border:1px solid var(--br2);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;margin-bottom:12px}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:11px 18px}
+.pc{background:var(--c);border:1.5px solid var(--br);border-radius:12px;overflow:hidden}
+.pi{height:90px;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:40px}
+.pb{padding:10px}
+.pn{font-size:12px;font-weight:700;margin-bottom:3px;line-height:1.3}
+.pp{font-size:16px;font-weight:700;color:var(--g);margin-bottom:6px}
+.add-btn{width:100%;background:var(--gd);border:none;border-radius:7px;padding:8px;font-size:11px;font-weight:700;color:#000;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.qr{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.qb{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif}
+.qb-m{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+.qb-p{background:rgba(16,185,129,.1);color:var(--g);border:1px solid rgba(16,185,129,.2)}
+.pu-hero{background:linear-gradient(135deg,#0d1f17,#1a0d30);border:1.5px solid rgba(139,92,246,.2);border-radius:14px;padding:18px;margin-bottom:16px}
+.pu-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:var(--p);margin-bottom:8px}
+.pu-title{font-size:19px;font-weight:800;margin-bottom:4px}
+.pu-sub{font-size:12px;color:var(--t2);line-height:1.5}
+.loc-f{background:var(--c2);border:1.5px solid var(--br2);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:9px}
+.loc-f input{background:transparent;border:none;font-size:14px;color:#fff;font-family:'Space Grotesk',sans-serif;flex:1}
+.loc-f input:focus{outline:none}
+.loc-f input::placeholder{color:var(--t3);font-size:13px}
+.ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ldot-g{background:var(--g)}.ldot-r{background:#ef4444}
+.est-box{background:rgba(139,92,246,.06);border:1.5px solid rgba(139,92,246,.15);border-radius:10px;padding:12px;margin:10px 0;display:flex;gap:8px;align-items:center}
+.est-it{flex:1;text-align:center}
+.est-v{font-size:17px;font-weight:700;color:var(--p)}
+.est-l{font-size:10px;color:var(--t2);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.est-div{width:1px;height:32px;background:rgba(139,92,246,.2)}
+.ci{background:var(--c);border:1.5px solid var(--br);border-left:3px solid var(--g);border-radius:12px;padding:12px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+.sum-box{background:rgba(16,185,129,.04);border:1.5px solid rgba(16,185,129,.13);border-radius:12px;padding:13px;margin:12px 0}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin:4px 0}
+.sum-tot{font-size:16px;font-weight:700;color:var(--g);border-top:1px solid rgba(16,185,129,.18);padding-top:9px;margin-top:7px}
+.flow-box{background:var(--c2);border:1px solid var(--br);border-radius:8px;padding:10px;margin-top:8px}
+.flow-t{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g);margin-bottom:6px}
+.flow-r{display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin:3px 0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:flex-end;z-index:1000}
+.modal{background:linear-gradient(180deg,#141a18,#0d0d0f);border:1.5px solid rgba(16,185,129,.2);border-radius:20px 20px 0 0;padding:22px 20px 40px;width:100%;max-height:85vh;overflow-y:auto}
+.m-handle{width:36px;height:4px;background:var(--br2);border-radius:2px;margin:0 auto 16px}
+.m-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:5px}
+.m-sub{font-size:12px;color:var(--t2);text-align:center;margin-bottom:16px;line-height:1.6}
+.pay-box{background:rgba(16,185,129,.05);border:1.5px solid rgba(16,185,129,.18);border-radius:12px;padding:13px;margin-bottom:12px}
+.pay-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.pay-lbl{font-size:12px;color:var(--t2)}
+.pay-val{font-size:15px;font-weight:700;color:var(--g)}
+.steps{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+.step{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--t2)}
+.sn{width:18px;height:18px;border-radius:50%;background:var(--g);color:#000;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.two-btn{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.oc{background:var(--c);border:1.5px solid var(--br);border-radius:13px;padding:13px;margin-bottom:10px}
+.oc-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:9px}
+.spill{padding:4px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.s1{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.s2{background:rgba(16,185,129,.1);color:var(--g);border:1px solid rgba(16,185,129,.2)}
+.s3{background:rgba(139,92,246,.1);color:var(--p);border:1px solid rgba(139,92,246,.2)}
+.s4{background:rgba(96,165,250,.1);color:#60a5fa;border:1px solid rgba(96,165,250,.2)}
+.s5{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.s6{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.tracker{margin:10px 0 8px}
+.tr-step{display:flex;gap:9px;align-items:flex-start}
+.tr-left{display:flex;flex-direction:column;align-items:center;width:22px;flex-shrink:0}
+.tr-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.tr-dot.done{background:var(--g);color:#000;font-weight:800}
+.tr-dot.active{background:var(--p);color:#fff}
+.tr-dot.todo{background:var(--c2);color:var(--t3);border:1.5px solid var(--br2)}
+.tr-line{width:2px;flex:1;min-height:10px;margin:2px 0}
+.tr-line.done{background:var(--g)}.tr-line.todo{background:var(--br2)}
+.tr-body{padding-bottom:10px;flex:1}
+.tr-name{font-size:12px;font-weight:700;margin-bottom:1px}
+.tr-time{font-size:10px;color:var(--t2)}
+.rider-row{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:8px;padding:9px;margin-top:7px;display:flex;align-items:center;gap:9px}
+.fav-star{margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer}
+.sh{background:linear-gradient(180deg,#1f1500,var(--bg));padding:16px;flex-shrink:0}
+.sh-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scard{background:var(--c2);border:1.5px solid var(--br);border-radius:12px;padding:12px}
+.sv{font-size:20px;font-weight:700;margin-bottom:2px}
+.slbl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.tog-strip{display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,.04);border:1.5px solid rgba(16,185,129,.12);border-radius:10px;padding:10px 12px;margin-top:10px}
+.tog-track{width:46px;height:25px;border-radius:13px;background:#333;position:relative;cursor:pointer;transition:.3s;flex-shrink:0}
+.tog-track.on{background:var(--g)}
+.tog-thumb{width:19px;height:19px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:.3s;pointer-events:none}
+.tog-track.on .tog-thumb{transform:translateX(21px)}
+.shop-tabs{display:flex;background:var(--c);border-radius:10px;padding:3px;margin:10px 18px 0;gap:3px;flex-shrink:0}
+.stab{flex:1;padding:8px 4px;text-align:center;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;transition:.2s;color:var(--t2)}
+.stab.act{background:var(--ad);color:#000}
+.do-card{background:var(--c);border:1.5px solid var(--br);border-left:4px solid var(--g);border-radius:12px;padding:13px;margin-bottom:10px}
+.mp-inp{width:100%;background:var(--c2);border:1.5px solid rgba(16,185,129,.22);border-radius:8px;padding:11px;font-size:14px;color:#fff;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.mp-inp:focus{outline:none;border-color:var(--g)}
+.mp-inp::placeholder{text-transform:none;letter-spacing:0;color:var(--t3)}
+.act-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.btn-rej{background:transparent;border:1.5px solid rgba(239,68,68,.35);color:#ef4444;padding:10px;border-radius:8px;font-weight:700;font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.btn-cfm{background:var(--gd);border:none;color:#000;padding:10px;border-radius:8px;font-weight:700;font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.rh{background:linear-gradient(180deg,#110a20,var(--bg));padding:16px;flex-shrink:0}
+.r-tog{display:flex;justify-content:space-between;align-items:center;background:var(--c2);border:1.5px solid var(--br2);border-radius:12px;padding:12px 14px;margin-top:12px}
+.job-card{background:var(--c);border:1.5px solid rgba(139,92,246,.22);border-radius:14px;padding:14px;margin-bottom:10px;position:relative}
+.new-badge{position:absolute;top:10px;right:10px;background:var(--pd);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px}
+.pu-tag{position:absolute;top:10px;right:10px;background:rgba(245,158,11,.15);color:var(--a);border:1px solid rgba(245,158,11,.25);font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px}
+.rr{display:flex;gap:9px;margin:8px 0;align-items:flex-start}
+.rd{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.rd-g{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)}
+.rd-p{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2)}
+.rd-a{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)}
+.earn-hl{background:rgba(16,185,129,.05);border:1.5px solid rgba(16,185,129,.13);border-radius:9px;padding:9px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
+.jbtns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.btn-dec{background:transparent;border:1.5px solid rgba(239,68,68,.3);color:#ef4444;padding:9px;border-radius:8px;font-weight:700;font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.btn-acc{background:var(--gd);border:none;color:#000;padding:9px;border-radius:8px;font-weight:700;font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer}
+.active-job{background:var(--c);border:2px solid var(--g);border-radius:14px;padding:14px;margin-bottom:12px}
+.profile-hdr{background:linear-gradient(135deg,#0d1f17,var(--bg));border:1.5px solid rgba(16,185,129,.15);border-radius:14px;padding:18px;margin-bottom:14px;text-align:center}
+.p-ava{width:64px;height:64px;border-radius:50%;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;border:2px solid rgba(16,185,129,.3);font-weight:700;color:#000}
+.bnav{display:flex;background:#000;border-top:1px solid var(--br);flex-shrink:0;padding:7px 0 3px}
+.nb{flex:1;text-align:center;cursor:pointer;padding:5px 3px;position:relative}
+.ni{font-size:20px;margin-bottom:2px}
+.nl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.nb.ag .nl{color:var(--g)}.nb.aa .nl{color:var(--a)}.nb.ap .nl{color:var(--p)}
+.nbadge{position:absolute;top:2px;right:calc(50% - 14px);background:#ef4444;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.empty{text-align:center;padding:50px 20px}
+.ei{font-size:56px;margin-bottom:12px}
+.et{font-size:15px;font-weight:700;margin-bottom:5px}
+.es{font-size:12px;color:var(--t2);line-height:1.6}
+.toast{position:fixed;top:40px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.sbox{background:var(--c);border:1.5px solid var(--br);border-radius:12px;padding:12px;margin-bottom:10px}
+.sbox-t{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="loading" style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:#08080c;color:#fff">
+  <div style="font-size:48px">🚴</div>
+  <div style="font-size:22px;font-weight:700;color:#10b981">TUMANA</div>
+  <div style="font-size:13px;color:rgba(255,255,255,0.4)">Chemelil Delivery</div>
+  <div style="width:32px;height:32px;border:3px solid rgba(255,255,255,0.1);border-top-color:#10b981;border-radius:50%;animation:spin .7s linear infinite"></div>
+</div>
+<div id="root" style="display:none;height:100%"></div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyB_C61rcssdlvqbyUK_QcHkl4HxbwcQBOI",authDomain:"chawkpro1.firebaseapp.com",projectId:"chawkpro1",storageBucket:"chawkpro1.firebasestorage.app",messagingSenderId:"897807998371",appId:"1:897807998371:web:33770a8ee5950c54860e16",measurementId:"G-0QSDD8JNLV"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const MPESA="0799878872";
+const D_BASE=50,D_KM=20;
+const calcFee=km=>Math.round(D_BASE+(parseFloat(km)||0.5)*D_KM);
+const calcBk=(sub,fee)=>({sub,fee,shopGets:sub,riderGets:Math.round(fee*.9),platGets:Math.round(fee*.1),total:sub+fee});
+const SHOPS=[{id:'s1',name:"Mama Jane's Grocery",category:'Grocery',distance_km:.5,rating:4.8,icon:'🛒',location:'Chemelil Center',delivery_enabled:true},{id:'s2',name:'Chemelil Pharmacy',category:'Pharmacy',distance_km:.8,rating:4.9,icon:'💊',location:'Near Hospital',delivery_enabled:true},{id:'s3',name:'Fresh Mboga',category:'Vegetables',distance_km:.3,rating:4.7,icon:'🥬',location:'Market',delivery_enabled:true},{id:'s4',name:"Omondi Butchery",category:'Butchery',distance_km:.6,rating:4.6,icon:'🥩',location:'Stage Area',delivery_enabled:true}];
+const PRODS={s1:[{id:'p1',name:'Maziwa 500ml',selling_price:60,quantity:20,emoji:'🥛'},{id:'p2',name:'Mkate Brown',selling_price:55,quantity:15,emoji:'🍞'},{id:'p3',name:'Mayai tray',selling_price:360,quantity:8,emoji:'🥚'},{id:'p4',name:'Mchele 2kg',selling_price:280,quantity:12,emoji:'🍚'}],s2:[{id:'p5',name:'Panadol',selling_price:50,quantity:100,emoji:'💊'},{id:'p6',name:'Dettol 250ml',selling_price:180,quantity:30,emoji:'🧴'}],s3:[{id:'p7',name:'Tomatoes 1kg',selling_price:80,quantity:30,emoji:'🍅'},{id:'p8',name:'Sukuma Wiki',selling_price:30,quantity:40,emoji:'🥬'}],s4:[{id:'p9',name:'Nyama Kilo',selling_price:800,quantity:10,emoji:'🥩'},{id:'p10',name:'Chicken',selling_price:600,quantity:5,emoji:'🍗'}]};
+const SF={shop:['placed','confirmed','assigned','heading','picked','transit','delivered'],pickup:['placed','assigned','heading','picked','transit','delivered']};
+const SL={placed:{shop:'Order Placed',pickup:'Request Placed',icon:'🕐'},confirmed:{shop:'Payment Confirmed',pickup:'Payment Confirmed',icon:'✅'},assigned:{shop:'Rider Assigned',pickup:'Rider Assigned',icon:'🏍️'},heading:{shop:'Heading to Shop',pickup:'Heading to Pickup',icon:'🔍'},picked:{shop:'Order Picked Up',pickup:'Item Picked Up',icon:'📦'},transit:{shop:'Out for Delivery',pickup:'On the Way',icon:'🚴'},delivered:{shop:'Delivered',pickup:'Delivered',icon:'✅'}};
+const SP={placed:{cls:'s1',label:'Placed'},confirmed:{cls:'s2',label:'Payment OK'},assigned:{cls:'s3',label:'Rider Coming'},heading:{cls:'s3',label:'En Route'},picked:{cls:'s4',label:'Picked Up'},transit:{cls:'s5',label:'In Transit'},delivered:{cls:'s6',label:'Delivered ✅'}};
+</script>
+
+<script>
+const {useState,useEffect,useCallback}=React;
+const html=htm.bind(React.createElement);
+let _tt;
+function useToast(){const[m,setM]=useState('');const show=useCallback(s=>{setM(s);clearTimeout(_tt);_tt=setTimeout(()=>setM(''),2800)},[]);return[m,show]}
+const Spin=()=>html`<div class="spin" style=${{margin:'40px auto',display:'block'}}/>`;
+const Empty=({icon,title,sub})=>html`<div class="empty"><div class="ei">${icon}</div><div class="et">${title}</div><div class="es">${sub}</div></div>`;
+
+// ── safe initial letter ──────────────────────────────────
+const initLetter=name=>{
+  if(!name||typeof name!=='string') return '?';
+  return name.charAt(0).toUpperCase();
+};
+
+// ── ROLE SCREEN ──────────────────────────────────────────
+function RoleScreen({onLogin}){
+  const[tab,setTab]=useState('tumana');
+  const[step,setStep]=useState('pick');
+  const[role,setRole]=useState(null);
+  const ROLES={tumana:[{id:'customer',label:'Customer',icon:'🛍️',col:'g',sub:'Order from shops or request a pickup anywhere',perks:['Browse local CHAWKPRO shops','Request pickup from any location','Live order tracking (7 stages)','Save favourite rider for pickups']},{id:'rider',label:'Rider',icon:'🏍️',col:'p',sub:'Earn KSh 1,000+/day on deliveries & pickups',perks:['Shop delivery jobs','Pickup & errand jobs','90% of every delivery fee','Daily M-Pesa payouts']}],shop:[{id:'shop',label:'Shop Owner',icon:'🏪',col:'a',sub:'CHAWKPRO management + Tumana delivery orders',perks:['Full sales & stock management','Receive delivery orders automatically','Your stock auto-syncs as menu','Zero commission — KSh 100/month only']}]};
+  if(step==='form') return html`<${AuthForm} role=${role} onBack=${()=>setStep('pick')} onLogin=${onLogin}/>`;
+  const accent=tab==='tumana'?'#10b981':'#f59e0b';
+  const colMap={g:'#10b981',a:'#f59e0b',p:'#8b5cf6'};
+  return html`<div class="rs">
+    <div class="rs-hero">
+      <div class="rs-eye">CHAWKPRO × TUMANA</div>
+      <div class="rs-h"><span style=${{color:accent}}>${tab==='tumana'?'Order & Earn':'Sell More'}</span>${' in Chemelil'}</div>
+      <div class="rs-sub" style=${{marginTop:6}}>${tab==='tumana'?'Order from shops or request a pickup anywhere.':'Connect CHAWKPRO to Tumana and grow your sales.'}</div>
+    </div>
+    <div class="rs-tabs">
+      <div class=${`rt ${tab==='tumana'?'rt-g':''}`} onClick=${()=>setTab('tumana')}>🚴 TUMANA</div>
+      <div class=${`rt ${tab==='shop'?'rt-a':''}`} onClick=${()=>setTab('shop')}>🏪 SHOP</div>
+    </div>
+    <div class="rs-cards">
+      ${ROLES[tab].map(r=>html`<div key=${r.id} class="rc" onClick=${()=>{setRole(r);setStep('form');}}>
+        <div class="rc-top"><div class=${`rc-ico ico-${r.col}`}>${r.icon}</div><div><div class="rc-name">${r.label}</div><div class="rc-sub">${r.sub}</div></div></div>
+        <div class="rc-perks">${r.perks.map((p,i)=>html`<div key=${i} class="perk"><span style=${{color:colMap[r.col]}}>✓</span>${p}</div>`)}</div>
+        <div class="rc-arr">→</div>
+      </div>`)}
+    </div>
+  </div>`;
+}
+
+// ── AUTH FORM ────────────────────────────────────────────
+function AuthForm({role,onBack,onLogin}){
+  const[isLogin,setIsLogin]=useState(false);
+  const[name,setName]=useState('');
+  const[phone,setPhone]=useState('');
+  const[shopName,setShopName]=useState('');
+  const[idNum,setIdNum]=useState('');
+  const[loading,setLoading]=useState(false);
+  const isShop=role.id==='shop',isRider=role.id==='rider';
+  const accent=isShop?'btn-a':isRider?'btn-p':'btn-g';
+  const accentColor=isShop?'var(--a)':isRider?'var(--p)':'var(--g)';
+  const submit=async()=>{
+    if(!phone||phone.length<9){alert('Enter valid phone number');return;}
+    if(!isLogin&&!name.trim()){alert('Enter your name');return;}
+    setLoading(true);
+    const userData={role:role.id,name:(name||phone).trim(),phone:phone.trim(),shopName:shopName.trim(),idNum:idNum.trim(),total_earnings:0,orders_completed:0,preferred_rider:null,favourite_shops:[]};
+    try{if(!isLogin) await db.collection('tumana_users').doc(phone.trim()).set({...userData,created_at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){}
+    localStorage.setItem('tumana_user',JSON.stringify(userData));
+    onLogin(userData);
+    setLoading(false);
+  };
+  return html`<div class="form-wrap">
+    <div class="bk" onClick=${onBack}>← Back</div>
+    <div class="fi">${role.icon}</div>
+    <div class="ft" style=${{color:accentColor}}>${isLogin?'Welcome back':'Join as '+role.label}</div>
+    <div class="fs">${isShop?'Link your CHAWKPRO shop to Tumana delivery':isRider?'Start earning — accept deliveries and pickups':'Order from shops or request any pickup in Chemelil'}</div>
+    ${!isLogin&&html`<div class="fld"><label>Full Name</label><input type="text" placeholder="e.g. Jane Achieng" value=${name} onInput=${e=>setName(e.target.value)}/></div>`}
+    <div class="fld"><label>Phone Number (M-Pesa)</label><input type="tel" placeholder="07XX XXX XXX" value=${phone} onInput=${e=>setPhone(e.target.value)}/></div>
+    ${!isLogin&&isShop&&html`<div class="fld"><label>Shop Name</label><input type="text" placeholder="e.g. Mama Jane Grocery" value=${shopName} onInput=${e=>setShopName(e.target.value)}/></div>`}
+    ${!isLogin&&isRider&&html`<div class="fld"><label>National ID Number</label><input type="text" placeholder="For verification and payouts" value=${idNum} onInput=${e=>setIdNum(e.target.value)}/></div>`}
+    <button class=${`btn ${accent}`} style=${{marginTop:8}} onClick=${submit} disabled=${loading}>${loading?'Please wait…':isLogin?'Login →':'Create Account →'}</button>
+    <div class="divd">or</div>
+    <button class="btn btn-ghost" onClick=${()=>setIsLogin(!isLogin)}>${isLogin?'Create new account':'Already registered? Login'}</button>
+    ${isShop&&!isLogin&&html`<div style=${{marginTop:12,background:'rgba(245,158,11,0.05)',border:'1px solid rgba(245,158,11,0.12)',borderRadius:10,padding:12,fontSize:12,color:'var(--t2)',lineHeight:1.7}}>💡 Already on CHAWKPRO? Use same phone number — stock auto-links as your delivery menu.</div>`}
+  </div>`;
+}
+
+// ── SHOP PRODUCTS ────────────────────────────────────────
+function ShopProducts({shop,cart,onBack,onAdd}){
+  const[prods,setProds]=useState([]);
+  const[loading,setLoading]=useState(true);
+  useEffect(()=>{
+    const unsub=db.collection('shops').doc(shop.id).collection('stock').where('selling_price','>',0)
+      .onSnapshot(s=>{const d=s.docs.map(doc=>({id:doc.id,...doc.data()})).filter(p=>p.quantity>0);setProds(d.length?d:(PRODS[shop.id]||[]));setLoading(false);},()=>{setProds(PRODS[shop.id]||[]);setLoading(false);});
+    return()=>unsub();
+  },[shop.id]);
+  const getQ=id=>cart.find(c=>c.id===id)?.quantity||0;
+  return html`<>
+    <div class="ph">
+      <div class="back-btn" onClick=${onBack}>← All Shops</div>
+      <div style=${{display:'flex',gap:10,alignItems:'center'}}>
+        <div class="sc-ico" style=${{width:44,height:44,fontSize:20}}>${shop.icon||'🏪'}</div>
+        <div><div style=${{fontSize:16,fontWeight:700}}>${shop.name}</div><div style=${{fontSize:11,color:'var(--t2)'}}>${shop.location} · ${shop.category}</div></div>
+      </div>
+    </div>
+    <div class="scr">
+      ${loading&&html`<${Spin}/>`}
+      <div class="pg">${prods.map(p=>html`<div key=${p.id} class="pc">
+        <div class="pi">${p.emoji||'🛒'}</div>
+        <div class="pb">
+          <div class="pn">${p.name}</div>
+          <div class="pp">KSh ${p.selling_price}</div>
+          ${getQ(p.id)>0?html`<div class="qr"><button class="qb qb-m" onClick=${()=>onAdd(shop,p,-1)}>−</button><span style=${{fontWeight:700}}>${getQ(p.id)}</span><button class="qb qb-p" onClick=${()=>onAdd(shop,p,1)}>+</button></div>`:html`<button class="add-btn" onClick=${()=>onAdd(shop,p,1)}>Add +</button>`}
+        </div>
+      </div>`)}</div>
+    </div>
+  </>`;
+}
+
+// ── PICKUP TAB ───────────────────────────────────────────
+function PickupTab({user,preferredRider,onOrderPlaced}){
+  const[from,setFrom]=useState('');
+  const[to,setTo]=useState('');
+  const[item,setItem]=useState('');
+  const[note,setNote]=useState('');
+  const[dist,setDist]=useState(1);
+  const[placing,setPlacing]=useState(false);
+  const fee=calcFee(dist);
+  const riderGets=Math.round(fee*.9);
+  const place=async()=>{
+    if(!from.trim()||!to.trim()||!item.trim()){alert('Fill in pickup location, drop-off, and item description');return;}
+    setPlacing(true);
+    try{await db.collection('delivery_orders').add({type:'pickup',customer_phone:user.phone,customer_name:user.name,pickup_from:from.trim(),delivery_address:to.trim(),item_description:item.trim(),special_note:note.trim(),distance:parseFloat(dist)||1,delivery_fee:fee,total:fee,rider_earnings:riderGets,platform_earnings:Math.round(fee*.1),status:'placed',rider_phone:null,rider_name:null,preferred_rider:preferredRider||null,created_at:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
+    setPlacing(false);setFrom('');setTo('');setItem('');setNote('');setDist(1);
+    onOrderPlaced();
+  };
+  return html`<div style=${{padding:'16px 18px 100px'}}>
+    <div class="pu-hero">
+      <div class="pu-badge">🏍️ Pickup & Drop Service</div>
+      <div class="pu-title">Send Anything in Chemelil</div>
+      <div class="pu-sub">No shop needed. Describe what to pick up — rider collects and delivers.</div>
+    </div>
+    <div style=${{marginBottom:12}}>
+      <div style=${{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:'uppercase',color:'var(--t2)',marginBottom:7}}>Route</div>
+      <div class="loc-f"><div class="ldot ldot-g"/><input type="text" placeholder="Pickup from… (e.g. Chemelil Market)" value=${from} onInput=${e=>setFrom(e.target.value)}/></div>
+      <div style=${{width:2,height:8,background:'var(--br2)',margin:'0 0 0 4px'}}/>
+      <div class="loc-f"><div class="ldot ldot-r"/><input type="text" placeholder="Drop off at… (e.g. My house)" value=${to} onInput=${e=>setTo(e.target.value)}/></div>
+    </div>
+    <div class="fld"><label>What should rider pick up?</label><textarea rows="2" placeholder="e.g. 2 mandazi from Mama Safi, parcel from chemist" value=${item} onInput=${e=>setItem(e.target.value)}/></div>
+    <div class="fld"><label>Special instructions (optional)</label><input type="text" placeholder="e.g. Call me when there" value=${note} onInput=${e=>setNote(e.target.value)}/></div>
+    <div class="fld"><label>Estimated distance</label><select value=${dist} onChange=${e=>setDist(e.target.value)}><option value=${0.5}>Under 0.5 km</option><option value=${1}>1 km</option><option value=${2}>2 km</option><option value=${3}>3 km</option><option value=${5}>5 km</option></select></div>
+    <div class="est-box">
+      <div class="est-it"><div class="est-v">KSh ${fee}</div><div class="est-l">You Pay</div></div>
+      <div class="est-div"/>
+      <div class="est-it"><div class="est-v">KSh ${riderGets}</div><div class="est-l">Rider Gets</div></div>
+      <div class="est-div"/>
+      <div class="est-it"><div class="est-v">15-25</div><div class="est-l">Min ETA</div></div>
+    </div>
+    ${preferredRider&&html`<div style=${{background:'rgba(16,185,129,.04)',border:'1px solid rgba(16,185,129,.12)',borderRadius:10,padding:12,marginBottom:12,display:'flex',alignItems:'center',gap:10}}><div style=${{fontSize:20}}>⭐</div><div><div style=${{fontSize:12,fontWeight:700,color:'var(--g)'}}>${preferredRider.name} gets first chance</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>Auto-assigned. If unavailable, next rider gets the job.</div></div></div>`}
+    <div style=${{background:'rgba(16,185,129,.04)',border:'1.5px solid rgba(16,185,129,.12)',borderRadius:10,padding:12,marginBottom:12}}><div style=${{fontSize:10,fontWeight:700,color:'var(--g)',marginBottom:5,textTransform:'uppercase',letterSpacing:1}}>Payment</div><div style=${{fontSize:12,color:'var(--t2)',lineHeight:1.6}}>Send KSh ${fee} to 📱 ${MPESA} before rider leaves pickup. Ref: TUM${user.phone.slice(-4)}</div></div>
+    <button class="btn btn-g" onClick=${place} disabled=${placing}>${placing?'Placing request…':'Request Pickup → KSh '+fee}</button>
+    <div style=${{fontSize:11,color:'var(--t2)',textAlign:'center',marginTop:10}}>Rider assigned within 2 minutes. Track in Orders tab.</div>
+  </div>`;
+}
+
+// ── CUSTOMER APP ─────────────────────────────────────────
+function CustomerApp({user,onLogout}){
+  const[tab,setTab]=useState('home');
+  const[shops,setShops]=useState([]);
+  const[shopLoading,setShopLoading]=useState(true);
+  const[selectedShop,setSelectedShop]=useState(null);
+  const[cart,setCart]=useState([]);
+  const[orders,setOrders]=useState([]);
+  const[ordLoading,setOrdLoading]=useState(false);
+  const[checkout,setCheckout]=useState(null);
+  const[toast,showToast]=useToast();
+  const[userData,setUserData]=useState(user);
+
+  const saveUser=async u=>{setUserData(u);localStorage.setItem('tumana_user',JSON.stringify(u));db.collection('tumana_users').doc(u.phone).set(u,{merge:true}).catch(()=>{});};
+  useEffect(()=>{
+    const unsub=db.collection('shops').where('delivery_enabled','==',true)
+      .onSnapshot(s=>{const d=s.docs.map(doc=>({id:doc.id,...doc.data()}));setShops(d.length?d:SHOPS);setShopLoading(false);},()=>{setShops(SHOPS);setShopLoading(false);});
+    return()=>unsub();
+  },[]);
+  useEffect(()=>{
+    if(tab!=='orders') return;
+    setOrdLoading(true);
+    const unsub=db.collection('delivery_orders').where('customer_phone','==',userData.phone).limit(30)
+      .onSnapshot(s=>{setOrders(s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0)));setOrdLoading(false);},()=>setOrdLoading(false));
+    return()=>unsub();
+  },[tab,userData.phone]);
+
+  const addToCart=(shop,prod,ch)=>setCart(prev=>{
+    const idx=prev.findIndex(i=>i.id===prod.id);
+    if(idx>=0){const u=[...prev];const q=u[idx].quantity+ch;if(q<=0){u.splice(idx,1);return u;}u[idx]={...u[idx],quantity:q};return u;}
+    if(ch<1) return prev;
+    if(prev.length>0&&prev[0].shopId!==shop.id){if(!confirm('Clear cart from '+prev[0].shopName+'?')) return prev;return[{...prod,quantity:1,shopId:shop.id,shopName:shop.name,shopDist:shop.distance_km||.5}];}
+    return[...prev,{...prod,quantity:1,shopId:shop.id,shopName:shop.name,shopDist:shop.distance_km||.5}];
+  });
+  const updateCart=(i,ch)=>setCart(prev=>{const u=[...prev];const q=u[i].quantity+ch;if(q<=0){u.splice(i,1);return u;}u[i]={...u[i],quantity:q};return u;});
+  const cartCount=cart.reduce((s,i)=>s+i.quantity,0);
+
+  const confirmOrder=async bk=>{
+    const shop=shops.find(s=>s.id===cart[0]?.shopId)||{};
+    try{await db.collection('delivery_orders').add({type:'shop',customer_phone:userData.phone,customer_name:userData.name,shop_id:shop.id||cart[0]?.shopId,shopName:shop.name||cart[0]?.shopName,shop_location:shop.location||'',delivery_address:userData.name+' is waiting',items:cart.map(i=>({id:i.id,name:i.name,quantity:i.quantity,price:i.selling_price})),subtotal:bk.sub,delivery_fee:bk.fee,total:bk.total,rider_earnings:bk.riderGets,platform_earnings:bk.platGets,distance:cart[0]?.shopDist||.5,status:'placed',rider_phone:null,rider_name:null,preferred_rider:null,created_at:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
+    setCart([]);setCheckout(null);setTab('orders');showToast('✅ Order placed! Shop confirming payment');
+  };
+
+  const toggleFavShop=id=>{const cur=userData.favourite_shops||[];const updated={...userData,favourite_shops:cur.includes(id)?cur.filter(f=>f!==id):[...cur,id]};saveUser(updated);showToast(cur.includes(id)?'Removed from favourites':'⭐ Added to favourites');};
+  const saveFavRider=order=>{if(!order.rider_name||!order.rider_phone) return;const updated={...userData,preferred_rider:{name:order.rider_name,phone:order.rider_phone}};saveUser(updated);showToast('⭐ '+order.rider_name+' saved as favourite rider');};
+  const favShops=shops.filter(s=>(userData.favourite_shops||[]).includes(s.id));
+  const letter=initLetter(userData.name);
+
+  return html`<>
+    ${toast&&html`<div class="toast">${toast}</div>`}
+    ${checkout&&html`<div class="overlay"><div class="modal">
+      <div class="m-handle"/>
+      <div style=${{fontSize:40,textAlign:'center',marginBottom:10}}>📱</div>
+      <div class="m-title">Send M-Pesa Now</div>
+      <div class="m-sub">Send payment below. Shop confirms then rider is auto-assigned.</div>
+      <div class="pay-box">
+        <div class="pay-row"><span class="pay-lbl">Send to</span><span class="pay-val">📱 ${MPESA}</span></div>
+        <div class="pay-row"><span class="pay-lbl">Amount</span><span class="pay-val">KSh ${checkout.total}</span></div>
+        <div class="pay-row"><span class="pay-lbl">Reference</span><span style=${{fontSize:13,fontWeight:700,color:'var(--g)'}}>TUM${userData.phone.slice(-4)}</span></div>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="sn">1</div><span>Open M-Pesa → Send Money → ${MPESA}</span></div>
+        <div class="step"><div class="sn">2</div><span>Amount: KSh ${checkout.total} · Ref: TUM${userData.phone.slice(-4)}</span></div>
+        <div class="step"><div class="sn">3</div><span>Tap I've Sent — shop confirms and rider auto-assigned</span></div>
+      </div>
+      <div class="flow-box"><div class="flow-t">💡 Where your money goes</div><div class="flow-r"><span>Shop earns (100%)</span><span>KSh ${checkout.shopGets}</span></div><div class="flow-r"><span>Rider earns (90%)</span><span>KSh ${checkout.riderGets}</span></div><div class="flow-r"><span>Platform (10%)</span><span>KSh ${checkout.platGets}</span></div></div>
+      <div class="two-btn"><button class="btn btn-ghost" onClick=${()=>setCheckout(null)}>Cancel</button><button class="btn btn-g" onClick=${()=>confirmOrder(checkout)}>✅ I've Sent</button></div>
+    </div></div>`}
+
+    ${tab==='home'&&!selectedShop&&html`<>
+      <div class="hdr">
+        <div class="hdr-row"><div class="loc-pill">📍 Chemelil</div><div class="ava" onClick=${()=>setTab('profile')}>${letter}</div></div>
+        <div class="srch">🔍 Search shops or products…</div>
+      </div>
+      ${favShops.length>0&&html`<><div class="sl">⭐ Favourite Shops</div><div class="favs">${favShops.map(s=>html`<div key=${s.id} class="fav-it" onClick=${()=>setSelectedShop(s)}><div class="fav-ring">${s.icon||'🏪'}</div><div class="fav-nm">${s.name.split(' ')[0]}</div></div>`)}</div></>`}
+      <div class="sl">All Shops</div>
+      <div class="scr"><div class="cnt">
+        ${shopLoading&&html`<${Spin}/>`}
+        ${!shopLoading&&shops.map(s=>html`<div key=${s.id} class="sc" onClick=${()=>setSelectedShop(s)}>
+          <div class="sc-row">
+            <div class="sc-ico">${s.icon||'🏪'}</div>
+            <div style=${{flex:1}}><div class="sc-name">${s.name}</div><div style=${{fontSize:12,color:'var(--t2)'}}>${s.category} · ${s.location}</div></div>
+            <button style=${{background:'none',border:'none',fontSize:18,cursor:'pointer',color:(userData.favourite_shops||[]).includes(s.id)?'#fbbf24':'#333'}} onClick=${e=>{e.stopPropagation();toggleFavShop(s.id);}}>${(userData.favourite_shops||[]).includes(s.id)?'★':'☆'}</button>
+          </div>
+          <div class="sc-meta"><span class="chip chip-g">🚴 KSh ${calcFee(s.distance_km)} delivery</span><span class="chip">⭐ ${s.rating||'4.8'}</span><span class="chip">⏱ 15-25 min</span></div>
+        </div>`)}
+      </div></div>
+    </>`}
+    ${tab==='home'&&selectedShop&&html`<${ShopProducts} shop=${selectedShop} cart=${cart} onBack=${()=>setSelectedShop(null)} onAdd=${addToCart}/>`}
+
+    ${tab==='pickup'&&html`<div class="scr"><${PickupTab} user=${userData} preferredRider=${userData.preferred_rider} onOrderPlaced=${()=>{setTab('orders');showToast('✅ Pickup requested! Rider being assigned');}}/></div>`}
+
+    ${tab==='cart'&&html`<div class="scr">
+      <div style=${{padding:'16px 18px 0'}}><div style=${{fontSize:19,fontWeight:700,marginBottom:2}}>Your Cart</div>${cart.length>0&&html`<div style=${{fontSize:12,color:'var(--t2)',marginBottom:12}}>${cart[0].shopName}</div>`}</div>
+      ${cart.length===0?html`<${Empty} icon="🛒" title="Cart is empty" sub="Browse shops and add items"/>`:html`<div style=${{padding:'0 18px 100px'}}>
+        ${cart.map((item,i)=>html`<div key=${item.id} class="ci">
+          <div><div style=${{fontWeight:700,marginBottom:2}}>${item.name}</div><div style=${{fontSize:11,color:'var(--t2)'}}>KSh ${item.selling_price} each</div></div>
+          <div style=${{textAlign:'right'}}><div style=${{fontWeight:700,color:'var(--g)',fontSize:15,marginBottom:5}}>KSh ${item.selling_price*item.quantity}</div><div class="qr"><button class="qb qb-m" onClick=${()=>updateCart(i,-1)}>−</button><span style=${{fontWeight:700,minWidth:16,textAlign:'center'}}>${item.quantity}</span><button class="qb qb-p" onClick=${()=>updateCart(i,1)}>+</button></div></div>
+        </div>`)}
+        ${(()=>{const sub=cart.reduce((s,i)=>s+i.selling_price*i.quantity,0);const fee=calcFee(cart[0]?.shopDist||.5);const bk=calcBk(sub,fee);return html`<><div class="sum-box"><div class="sum-row"><span>Subtotal</span><span>KSh ${sub}</span></div><div class="sum-row"><span>Delivery</span><span>KSh ${fee}</span></div><div class="sum-row sum-tot"><span>Total</span><span>KSh ${bk.total}</span></div><div class="flow-box"><div class="flow-t">💡 Money flow</div><div class="flow-r"><span>Shop gets (100%)</span><span>KSh ${sub}</span></div><div class="flow-r"><span>Rider gets (90%)</span><span>KSh ${bk.riderGets}</span></div><div class="flow-r"><span>Platform (10%)</span><span>KSh ${bk.platGets}</span></div></div></div><button class="btn btn-g" onClick=${()=>setCheckout(bk)}>Place Order → KSh ${bk.total}</button></>`})()}
+      </div>`}
+    </div>`}
+
+    ${tab==='orders'&&html`<div class="scr">
+      <div style=${{padding:'16px 18px 0'}}><div style=${{fontSize:19,fontWeight:700,marginBottom:4}}>My Orders</div><div style=${{fontSize:12,color:'var(--t2)',marginBottom:12}}>Live tracking · 7 status stages</div></div>
+      <div style=${{padding:'0 18px 100px'}}>
+        ${ordLoading&&html`<${Spin}/>`}
+        ${!ordLoading&&orders.length===0&&html`<${Empty} icon="📦" title="No orders yet" sub="Shop orders and pickup requests appear here"/>`}
+        ${orders.map(o=>{
+          const sp=SP[o.status]||SP.placed;
+          const flow=SF[o.type||'shop'];
+          const curIdx=flow.indexOf(o.status);
+          return html`<div key=${o.id} class="oc">
+            <div class="oc-head">
+              <div><div style=${{fontWeight:700,fontSize:14}}>${o.type==='pickup'?'🏍️ Pickup':'🛒 Order'} #${o.id.slice(-6).toUpperCase()}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>${o.shopName||o.pickup_from||'Order'}</div></div>
+              <span class=${`spill ${sp.cls}`}>${sp.label}</span>
+            </div>
+            <div class="tracker">${flow.map((key,i)=>{
+              const isDone=i<curIdx,isAct=i===curIdx,isLast=i===flow.length-1;
+              const info=SL[key]||{};
+              const label=info[o.type||'shop']||key;
+              return html`<div key=${key} class="tr-step">
+                <div class="tr-left">
+                  <div class=${`tr-dot ${isDone?'done':isAct?'active':'todo'}`}>${isDone?'✓':info.icon||'•'}</div>
+                  ${!isLast&&html`<div class=${`tr-line ${isDone?'done':'todo'}`}/>`}
+                </div>
+                <div class="tr-body"><div class="tr-name" style=${{color:isDone?'var(--g)':isAct?'#fff':'var(--t2)'}}>${label}</div>${isAct&&html`<div class="tr-time">Now</div>`}${isDone&&html`<div class="tr-time" style=${{color:'var(--g)'}}>Done ✓</div>`}</div>
+              </div>`;
+            })}</div>
+            <div style=${{fontSize:12,color:'var(--t2)',marginBottom:5}}>${o.type==='pickup'?(o.pickup_from||'')+'→'+(o.delivery_address||''):(o.items||[]).map(i=>i.name+' ×'+i.quantity).join(' · ')}</div>
+            <div style=${{fontWeight:700,color:'var(--g)'}}>KSh ${o.total}</div>
+            ${o.rider_name&&html`<div class="rider-row">
+              <div style=${{fontSize:20}}>🏍️</div>
+              <div><div style=${{fontWeight:700,fontSize:13}}>${o.rider_name}</div><div style=${{fontSize:11,color:'var(--t2)'}}>${o.rider_phone}</div></div>
+              <div style=${{marginLeft:'auto',textAlign:'center'}}>
+                <button class="fav-star" onClick=${()=>saveFavRider(o)}>${userData.preferred_rider?.phone===o.rider_phone?'⭐':'☆'}</button>
+                <div style=${{fontSize:9,color:'var(--t2)'}}>${userData.preferred_rider?.phone===o.rider_phone?'Saved':'Save'}</div>
+              </div>
+            </div>`}
+          </div>`;
+        })}
+      </div>
+    </div>`}
+
+    ${tab==='profile'&&html`<div class="scr"><div style=${{padding:'16px 18px 100px'}}>
+      <div class="profile-hdr"><div class="p-ava">${letter}</div><div style=${{fontSize:18,fontWeight:700,marginBottom:4}}>${userData.name}</div><div style=${{fontSize:13,color:'var(--t2)'}}>${userData.phone}</div></div>
+      <div class="sbox"><div class="sbox-t">⭐ Favourite Rider</div>${userData.preferred_rider?html`<div style=${{display:'flex',alignItems:'center',gap:10}}><div style=${{fontSize:24}}>🏍️</div><div><div style=${{fontWeight:700}}>${userData.preferred_rider.name}</div><div style=${{fontSize:11,color:'var(--t2)'}}>${userData.preferred_rider.phone}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>Gets priority on your pickup requests</div></div><button style=${{marginLeft:'auto',background:'none',border:'none',color:'#ef4444',fontSize:18,cursor:'pointer'}} onClick=${()=>{const u={...userData,preferred_rider:null};saveUser(u);showToast('Rider preference cleared');}}>✕</button></div>`:html`<div style=${{fontSize:12,color:'var(--t2)',lineHeight:1.6}}>No favourite rider yet. After a delivery, tap ☆ next to rider in Orders to save them.</div>`}</div>
+      <div class="sbox"><div class="sbox-t">Account</div><div style=${{fontSize:13,color:'var(--t2)',marginBottom:12}}>Role: Customer · Phone: ${userData.phone}</div><button class="btn btn-ghost" onClick=${()=>{if(confirm('Log out?')) onLogout();}}>Logout</button></div>
+    </div></div>`}
+
+    <div class="bnav">
+      <div class=${`nb ${tab==='home'?'ag':''}`} onClick=${()=>{setTab('home');setSelectedShop(null);}}><div class="ni">🏠</div><div class="nl">Shops</div></div>
+      <div class=${`nb ${tab==='pickup'?'ag':''}`} onClick=${()=>setTab('pickup')}><div class="ni">🏍️</div><div class="nl">Pickup</div></div>
+      <div class=${`nb ${tab==='cart'?'ag':''}`} onClick=${()=>setTab('cart')}><div class="ni">🛒</div>${cartCount>0&&html`<div class="nbadge">${cartCount}</div>`}<div class="nl">Cart</div></div>
+      <div class=${`nb ${tab==='orders'?'ag':''}`} onClick=${()=>setTab('orders')}><div class="ni">📦</div><div class="nl">Orders</div></div>
+      <div class=${`nb ${tab==='profile'?'ag':''}`} onClick=${()=>setTab('profile')}><div class="ni">👤</div><div class="nl">Me</div></div>
+    </div>
+  </>`;
+}
+
+// ── SHOP DASHBOARD ───────────────────────────────────────
+function ShopDashboard({user,onLogout}){
+  const[tab,setTab]=useState('orders');
+  const[orders,setOrders]=useState([]);
+  const[codes,setCodes]=useState({});
+  const[delivOn,setDelivOn]=useState(false);
+  const[toast,showToast]=useToast();
+  useEffect(()=>{db.collection('shops').doc(user.phone).get().then(d=>{if(d.exists) setDelivOn(d.data().delivery_enabled||false);}).catch(()=>{});},[user.phone]);
+  useEffect(()=>{
+    if(tab!=='orders') return;
+    const unsub=db.collection('delivery_orders').where('shop_id','==',user.phone).limit(50)
+      .onSnapshot(s=>{setOrders(s.docs.map(d=>({id:d.id,...d.data()})).filter(o=>!['delivered','rejected'].includes(o.status)).sort((a,b)=>(b.created_at?.seconds||0)-(a.created_at?.seconds||0)));},()=>{});
+    return()=>unsub();
+  },[tab,user.phone]);
+  const pending=orders.filter(o=>o.status==='placed').length;
+  const confirmPay=async id=>{const c=(codes[id]||'').trim();if(!c||c.length<5){alert('Enter M-Pesa code from your SMS');return;}try{await db.collection('delivery_orders').doc(id).update({status:'confirmed',mpesa_code:c,confirmed_at:firebase.firestore.FieldValue.serverTimestamp()});showToast('✅ Confirmed! Notifying riders…');}catch(e){showToast('Error — check connection');}};
+  const toggleDeliv=async()=>{const n=!delivOn;setDelivOn(n);try{await db.collection('shops').doc(user.phone).set({delivery_enabled:n,name:user.shopName||user.name,owner_phone:user.phone,location:'Chemelil',category:'General',icon:'🏪',distance_km:.5,rating:5.0,updated_at:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});showToast(n?'✅ Delivery ON — customers can see your shop':'Delivery paused');}catch(e){setDelivOn(!n);}};
+  const statusLabel={placed:'Awaiting M-Pesa',confirmed:'Confirmed ✅',assigned:'Rider Assigned',heading:'Rider En Route',picked:'Picked Up',transit:'Out for Delivery'};
+  const shopLetter=initLetter(user.shopName||user.name);
+  return html`<>
+    ${toast&&html`<div class="toast">${toast}</div>`}
+    <div class="sh">
+      <div class="sh-row">
+        <div><div style=${{fontSize:17,fontWeight:700}}>${user.shopName||user.name}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>CHAWKPRO × TUMANA · ${user.phone}</div></div>
+        <button onClick=${()=>{if(confirm('Logout?')) onLogout();}} style=${{background:'none',border:'1px solid var(--br2)',borderRadius:8,padding:'5px 10px',color:'var(--t2)',fontSize:11,cursor:'pointer'}}>Out</button>
+      </div>
+      <div class="sgrid">
+        <div class="scard"><div class="sv" style=${{color:'var(--a)'}}>KSh 8,450</div><div class="slbl">Today Sales</div></div>
+        <div class="scard"><div class="sv" style=${{color:'var(--g)'}}>${orders.filter(o=>o.status==='transit').length}</div><div class="slbl">Out for Delivery</div></div>
+      </div>
+      <div class="tog-strip">
+        <div><div style=${{fontWeight:700,fontSize:13,color:delivOn?'var(--g)':'var(--t2)'}}>${delivOn?'🟢 Accepting Delivery Orders':'🔴 Delivery Off'}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>${delivOn?'Customers see your shop on Tumana':'Toggle to receive Tumana orders'}</div></div>
+        <div class=${`tog-track ${delivOn?'on':''}`} onClick=${toggleDeliv}><div class="tog-thumb"/></div>
+      </div>
+    </div>
+    <div class="shop-tabs">
+      ${[['orders','📋 Orders'],['sales','💰 Sales'],['stock','📦 Stock'],['settings','⚙️']].map(([k,l])=>html`<div key=${k} class=${`stab ${tab===k?'act':''}`} onClick=${()=>setTab(k)}>${l}${k==='orders'&&pending>0?html`<span style=${{background:'#ef4444',color:'#fff',borderRadius:'50%',padding:'0 4px',fontSize:9,marginLeft:3}}>${pending}</span>`:''}</div>`)}
+    </div>
+    <div class="scr">
+      ${tab==='orders'&&html`<div style=${{padding:'10px 18px 100px'}}>
+        ${orders.length===0?html`<${Empty} icon="📋" title=${delivOn?'No orders yet':'Delivery is Off'} sub=${delivOn?'Tumana orders appear here instantly':'Enable delivery above'}/>`:orders.map(o=>html`<div key=${o.id} class="do-card">
+          <div style=${{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+            <div><div style=${{fontWeight:700}}>#${o.id.slice(-6).toUpperCase()}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>${o.customer_name} · ${o.customer_phone}</div></div>
+            <span class=${`spill ${SP[o.status]?.cls||'s1'}`}>${statusLabel[o.status]||o.status}</span>
+          </div>
+          <div style=${{fontSize:12,color:'var(--t2)',marginBottom:8}}>${(o.items||[]).map(i=>i.name+' ×'+i.quantity).join(' · ')}</div>
+          <div style=${{display:'flex',gap:7,marginBottom:8}}>
+            <div style=${{flex:1,background:'rgba(16,185,129,.05)',border:'1px solid rgba(16,185,129,.13)',borderRadius:8,padding:'8px 9px',textAlign:'center'}}><div style=${{fontSize:9,color:'var(--t2)',marginBottom:2}}>YOU EARN</div><div style=${{fontWeight:800,color:'var(--g)'}}>KSh ${o.subtotal||0}</div></div>
+            <div style=${{flex:1,background:'var(--c2)',borderRadius:8,padding:'8px 9px',textAlign:'center'}}><div style=${{fontSize:9,color:'var(--t2)',marginBottom:2}}>TOTAL PAID</div><div style=${{fontWeight:800}}>KSh ${o.total||0}</div></div>
+          </div>
+          ${o.status==='placed'&&html`<><input class="mp-inp" type="text" placeholder="M-Pesa code from SMS e.g. RGH456XYZ" value=${codes[o.id]||''} onInput=${e=>setCodes(p=>({...p,[o.id]:e.target.value.toUpperCase()}))}/><div class="act-row"><button class="btn-rej">❌ Reject</button><button class="btn-cfm" onClick=${()=>confirmPay(o.id)}>✅ Confirm</button></div></>`}
+          ${o.rider_name&&html`<div style=${{background:'rgba(139,92,246,.06)',border:'1px solid rgba(139,92,246,.14)',borderRadius:8,padding:9,fontSize:12,color:'var(--p)',marginTop:6}}>🏍️ ${o.rider_name} · ${o.rider_phone}</div>`}
+        </div>`)}
+      </div>`}
+      ${tab!=='orders'&&html`<${Empty} icon=${tab==='sales'?'💰':tab==='stock'?'📦':'⚙️'} title=${tab==='sales'?'Sales Dashboard':tab==='stock'?'Stock Management':'Settings'} sub="Connected to CHAWKPRO data · Coming in next update"/>`}
+    </div>
+    <div class="bnav">
+      ${[['orders','📋','Orders'],['sales','💰','Sales'],['stock','📦','Stock'],['settings','⚙️','Settings']].map(([k,i,l])=>html`<div key=${k} class=${`nb ${tab===k?'aa':''}`} onClick=${()=>setTab(k)}><div class="ni">${i}</div>${k==='orders'&&pending>0?html`<div class="nbadge">${pending}</div>`:''}<div class="nl">${l}</div></div>`)}
+    </div>
+  </>`;
+}
+
+// ── RIDER DASHBOARD ──────────────────────────────────────
+function RiderDashboard({user,onLogout}){
+  const[online,setOnline]=useState(false);
+  const[jobs,setJobs]=useState([]);
+  const[active,setActive]=useState(null);
+  const[earned,setEarned]=useState(0);
+  const[toast,showToast]=useToast();
+  useEffect(()=>{
+    if(!online){setJobs([]);return;}
+    const unsub=db.collection('delivery_orders').where('status','in',['confirmed','placed']).limit(20)
+      .onSnapshot(s=>{setJobs(s.docs.map(d=>({id:d.id,...d.data()})).filter(j=>!j.rider_phone));},()=>{setJobs([{id:'dj1',type:'shop',shopName:"Mama Jane's",shopLocation:'Chemelil Center',customer_name:'John K.',delivery_address:'Near Hospital',distance:.8,delivery_fee:70,total:550,status:'confirmed'},{id:'dj2',type:'pickup',pickup_from:'Stage Area',delivery_address:'Market',item_description:'2 mandazi from Mama Safi',distance:.5,delivery_fee:60,total:60,status:'placed',customer_name:'Mary W.'}]);});
+    return()=>unsub();
+  },[online]);
+  useEffect(()=>{
+    if(!user?.phone) return;
+    const unsub=db.collection('delivery_orders').where('rider_phone','==',user.phone).limit(10)
+      .onSnapshot(s=>{const a=s.docs.map(d=>({id:d.id,...d.data()})).find(d=>['assigned','heading','picked','transit'].includes(d.status));setActive(a||null);},()=>setActive(null));
+    return()=>unsub();
+  },[user?.phone]);
+  const riderGets=j=>Math.round((j.delivery_fee||70)*.9);
+  const accept=async job=>{
+    try{await db.collection('delivery_orders').doc(job.id).update({rider_phone:user.phone,rider_name:user.name,status:'assigned',assigned_at:firebase.firestore.FieldValue.serverTimestamp()});}
+    catch(e){setActive({...job,status:'assigned',rider_name:user.name,rider_phone:user.phone});}
+    setJobs(p=>p.filter(j=>j.id!==job.id));
+    showToast('✅ Accepted! Head to '+(job.type==='pickup'?job.pickup_from:job.shopName));
+  };
+  const nextSt={assigned:'heading',heading:'picked',picked:'transit',transit:'delivered'};
+  const nextLb={assigned:'🔍 Heading to Pickup',heading:'📦 Picked Up',picked:'🚴 Out for Delivery',transit:'✅ Mark Delivered'};
+  const advance=async()=>{
+    if(!active) return;
+    const ns=nextSt[active.status];if(!ns) return;
+    try{await db.collection('delivery_orders').doc(active.id).update({status:ns,[ns+'_at']:firebase.firestore.FieldValue.serverTimestamp()});}
+    catch(e){setActive(p=>({...p,status:ns}));}
+    if(ns==='delivered'){const e=riderGets(active);setEarned(p=>p+e);try{await db.collection('riders').doc(user.phone).update({total_earnings:firebase.firestore.FieldValue.increment(e),orders_completed:firebase.firestore.FieldValue.increment(1)});}catch(er){}setActive(null);showToast('🎉 Delivered! KSh '+e+' earned');}
+  };
+  const toggleOnline=()=>{const n=!online;setOnline(n);db.collection('riders').doc(user.phone).set({online:n,name:user.name,phone:user.phone},{merge:true}).catch(()=>{});showToast(n?'🟢 Online — receiving jobs':'🔴 Offline');};
+  const progKeys=['assigned','heading','picked','transit','delivered'];
+  return html`<>
+    ${toast&&html`<div class="toast">${toast}</div>`}
+    <div class="rh">
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div><div style=${{fontSize:18,fontWeight:700}}>Hey ${(user.name||'Rider').split(' ')[0]}! 🏍️</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>${user.phone} · Tumana Rider</div></div>
+        <button onClick=${()=>{if(confirm('Logout?')) onLogout();}} style=${{background:'none',border:'1px solid var(--br2)',borderRadius:8,padding:'5px 10px',color:'var(--t2)',fontSize:11,cursor:'pointer'}}>Out</button>
+      </div>
+      <div class="r-tog">
+        <div><div style=${{fontWeight:700,color:online?'var(--g)':'var(--t2)'}}>${online?'🟢 Online — Receiving Jobs':'🔴 Offline'}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>${online?'Shop deliveries and pickup requests below':'Toggle to start earning'}</div></div>
+        <div class=${`tog-track ${online?'on':''}`} onClick=${toggleOnline}><div class="tog-thumb"/></div>
+      </div>
+    </div>
+    <div class="scr">
+      <div style=${{display:'flex',gap:8,padding:'10px 18px 0'}}>
+        <div class="scard" style=${{flex:1}}><div class="sv" style=${{color:'var(--g)'}}>KSh ${earned}</div><div class="slbl">Today</div></div>
+        <div class="scard" style=${{flex:1}}><div class="sv" style=${{color:'var(--p)'}}>${jobs.length}</div><div class="slbl">Available</div></div>
+      </div>
+      <div style=${{padding:'10px 18px 100px'}}>
+        ${active&&html`<>
+          <div style=${{fontSize:10,fontWeight:700,letterSpacing:1.5,color:'#ef4444',textTransform:'uppercase',marginBottom:8}}>🔴 Active Delivery</div>
+          <div class="active-job">
+            <div style=${{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+              <div><div style=${{fontWeight:700,fontSize:14}}>${active.type==='pickup'?'🏍️ Pickup':'🛒 Delivery'} #${active.id.slice(-6).toUpperCase()}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>${active.shopName||active.item_description||''}</div></div>
+              <div style=${{fontWeight:800,color:'var(--g)',fontSize:20}}>KSh ${riderGets(active)}</div>
+            </div>
+            <div style=${{display:'flex',alignItems:'center',gap:4,margin:'8px 0 10px'}}>
+              ${progKeys.map((k,i)=>html`<React.Fragment key=${k}>
+                <div style=${{width:22,height:22,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:800,background:progKeys.indexOf(active.status)>i?'var(--g)':progKeys.indexOf(active.status)===i?'var(--p)':'var(--c2)',color:progKeys.indexOf(active.status)>=i?'#000':'var(--t3)',border:progKeys.indexOf(active.status)===i?'none':'1.5px solid var(--br2)'}}>${progKeys.indexOf(active.status)>i?'✓':i+1}</div>
+                ${i<progKeys.length-1&&html`<div style=${{flex:1,height:2,background:progKeys.indexOf(active.status)>i?'var(--g)':'var(--br2)'}}/>`}
+              </React.Fragment>`)}
+            </div>
+            <div class="rr"><div class="rd rd-g">🏪</div><div><div style=${{fontSize:9,color:'var(--g)',fontWeight:700}}>PICKUP FROM</div><div style=${{fontWeight:700}}>${active.shopName||active.pickup_from||''}</div><div style=${{fontSize:11,color:'var(--t2)'}}>${active.shopLocation||active.pickup_from||''}</div></div></div>
+            <div class="rr"><div class="rd rd-p">📍</div><div><div style=${{fontSize:9,color:'var(--p)',fontWeight:700}}>DELIVER TO</div><div style=${{fontWeight:700}}>${active.customer_name||''}</div><div style=${{fontSize:11,color:'var(--t2)'}}>${active.delivery_address||''}</div></div></div>
+            ${active.item_description&&html`<div class="rr"><div class="rd rd-a">📝</div><div><div style=${{fontSize:9,color:'var(--a)',fontWeight:700}}>ITEM</div><div style=${{fontSize:13}}>${active.item_description}</div></div></div>`}
+            ${nextSt[active.status]&&html`<button class="btn btn-g" style=${{marginTop:10}} onClick=${advance}>${nextLb[active.status]}</button>`}
+          </div>
+        </>`}
+        ${!online?html`<${Empty} icon="😴" title="You're Offline" sub="Toggle Online above to receive shop deliveries and pickup requests"/>`:
+          jobs.length===0&&!active?html`<${Empty} icon="⏳" title="No jobs yet" sub="Shop deliveries and pickup requests appear here when confirmed"/>`:
+          html`<>
+            ${jobs.length>0&&html`<div style=${{fontSize:10,fontWeight:700,letterSpacing:1.5,color:'var(--p)',textTransform:'uppercase',marginBottom:8}}>🔔 ${jobs.length} Available Job${jobs.length!==1?'s':''}</div>`}
+            ${jobs.map(job=>html`<div key=${job.id} class="job-card">
+              ${job.type==='pickup'?html`<div class="pu-tag">PICKUP REQUEST</div>`:html`<div class="new-badge">SHOP DELIVERY</div>`}
+              <div style=${{display:'flex',justifyContent:'space-between',marginBottom:10,paddingRight:90}}>
+                <div><div style=${{fontWeight:700}}>${job.type==='pickup'?'Pickup & Drop':'Shop Delivery'}</div><div style=${{fontSize:11,color:'var(--t2)',marginTop:2}}>#${job.id.slice(-6).toUpperCase()}</div></div>
+                <div style=${{textAlign:'right'}}><div style=${{fontSize:20,fontWeight:800,color:'var(--g)'}}>KSh ${riderGets(job)}</div><div style=${{fontSize:9,color:'var(--t2)'}}>your cut</div></div>
+              </div>
+              <div class="rr"><div class=${`rd ${job.type==='pickup'?'rd-a':'rd-g'}`}>${job.type==='pickup'?'📍':'🏪'}</div><div><div style=${{fontSize:9,color:job.type==='pickup'?'var(--a)':'var(--g)',fontWeight:700}}>${job.type==='pickup'?'PICKUP FROM':'SHOP'}</div><div style=${{fontWeight:700}}>${job.type==='pickup'?job.pickup_from:job.shopName}</div>${job.type==='pickup'&&html`<div style=${{fontSize:11,color:'var(--t2)'}}>${job.item_description}</div>`}${job.type==='shop'&&html`<div style=${{fontSize:11,color:'var(--t2)'}}>${job.shopLocation||''}</div>`}</div></div>
+              <div class="rr"><div class="rd rd-p">📍</div><div><div style=${{fontSize:9,color:'var(--p)',fontWeight:700}}>DELIVER TO</div><div style=${{fontWeight:700}}>${job.customer_name}</div><div style=${{fontSize:11,color:'var(--t2)'}}>${job.delivery_address}</div></div></div>
+              <div class="earn-hl"><span style=${{fontSize:12,color:'var(--t2)'}}>${job.distance}km · KSh ${job.delivery_fee} fee</span><span style=${{fontWeight:800,color:'var(--g)'}}>You: KSh ${riderGets(job)}</span></div>
+              ${job.preferred_rider?.phone===user.phone&&html`<div style=${{background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.2)',borderRadius:8,padding:'7px 9px',fontSize:11,color:'var(--a)',marginBottom:7}}>⭐ This customer chose you as their favourite rider!</div>`}
+              <div class="jbtns"><button class="btn-dec">❌ Decline</button><button class="btn-acc" onClick=${()=>accept(job)}>✅ Accept</button></div>
+            </div>`)}
+          </>`}
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="nb ap"><div class="ni">🏍️</div>${jobs.length>0?html`<div class="nbadge">${jobs.length}</div>`:''}<div class="nl">Jobs</div></div>
+      <div class="nb"><div class="ni">💰</div><div class="nl">Earnings</div></div>
+    </div>
+  </>`;
+}
+
+// ── ROOT ─────────────────────────────────────────────────
+function Root(){
+  const[user,setUser]=useState(()=>{
+    try{
+      const s=localStorage.getItem('tumana_user');
+      if(!s) return null;
+      const p=JSON.parse(s);
+      if(!p||!p.role||!p.phone) return null;
+      // Ensure name always exists
+      if(!p.name) p.name=p.phone;
+      return p;
+    }catch(e){localStorage.removeItem('tumana_user');return null;}
+  });
+  const login=u=>{if(!u.name) u.name=u.phone;setUser(u);localStorage.setItem('tumana_user',JSON.stringify(u));};
+  const logout=()=>{setUser(null);try{localStorage.removeItem('tumana_user');}catch(e){}};
+  if(user&&!['customer','shop','rider'].includes(user.role)){localStorage.removeItem('tumana_user');return html`<div class="app"><${RoleScreen} onLogin=${login}/></div>`;}
+  const accent=!user?'var(--g)':user.role==='shop'?'var(--a)':user.role==='rider'?'var(--p)':'var(--g)';
+  const label=!user?'CHAWKPRO × TUMANA':user.role==='shop'?'🏪 CHAWKPRO':user.role==='rider'?'🏍️ RIDER':'🛍️ TUMANA';
+  return html`<div class="app">
+    <div class="sb">
+      <span>9:41</span>
+      <span style=${{color:accent}}>${label}</span>
+      <span style=${{cursor:'pointer',fontSize:11,color:'var(--t3)'}} onClick=${()=>{localStorage.clear();setUser(null);}}>↺</span>
+    </div>
+    ${!user&&html`<div style=${{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}><${RoleScreen} onLogin=${login}/></div>`}
+    ${user?.role==='customer'&&html`<${CustomerApp} user=${user} onLogout=${logout}/>`}
+    ${user?.role==='shop'&&html`<${ShopDashboard} user=${user} onLogout=${logout}/>`}
+    ${user?.role==='rider'&&html`<${RiderDashboard} user=${user} onLogout=${logout}/>`}
+  </div>`;
+}
+
+// ── MOUNT ─────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    try{
+      ReactDOM.render(React.createElement(Root),document.getElementById('root'));
+      document.getElementById('loading').style.display='none';
+      document.getElementById('root').style.display='';
+    }catch(e){
+      document.getElementById('loading').innerHTML='<div style="padding:24px;text-align:center"><div style="font-size:40px;margin-bottom:12px">⚠️</div><div style="font-size:15px;font-weight:700;color:#ff6b6b;margin-bottom:8px">Error: '+e.message+'</div><button onclick="localStorage.clear();location.reload()" style="background:#10b981;border:none;color:#000;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">🔄 Clear & Reload</button></div>';
+    }
+  },200);
+});
+</script>
+</body>
+</html>
