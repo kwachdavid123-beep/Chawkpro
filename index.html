@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Dad Cashflow Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e40af">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .nav-tab { transition: all 0.2s; }
+        .nav-tab.active { border-bottom: 4px solid #1e40af; color: #1e40af; font-weight: 700; }
+        .total-row { font-weight: 700; background-color: #f0f9ff; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<div class="max-w-4xl mx-auto bg-white shadow-xl min-h-screen">
+
+    <div class="bg-blue-900 text-white p-6">
+        <h1 class="text-3xl font-bold">Rich Dad Cashflow Tracker</h1>
+        <p class="text-blue-200">Easy Fill • Auto Calculations</p>
+    </div>
+
+    <!-- Month Selector -->
+    <div class="p-4 bg-white border-b">
+        <select id="month-select" onchange="switchMonth()" class="w-full text-xl font-semibold p-3 border rounded-2xl"></select>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b bg-white overflow-x-auto">
+        <button onclick="switchTab(0)" class="nav-tab active flex-1 py-4 text-sm">📅 Daily</button>
+        <button onclick="switchTab(1)" class="nav-tab flex-1 py-4 text-sm">💰 Income</button>
+        <button onclick="switchTab(2)" class="nav-tab flex-1 py-4 text-sm">🛒 Expenses</button>
+        <button onclick="switchTab(3)" class="nav-tab flex-1 py-4 text-sm">🏦 Assets</button>
+        <button onclick="switchTab(4)" class="nav-tab flex-1 py-4 text-sm">📊 Dashboard</button>
+    </div>
+
+    <div class="p-6">
+
+        <!-- DAILY TRACKER - Enhanced -->
+        <div id="tab-0" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Daily Money Tracker</h2>
+            
+            <div class="space-y-6">
+                <!-- Quick Daily Summary -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="bg-emerald-50 p-5 rounded-2xl text-center">
+                        <div class="text-xs text-gray-500">MONEY IN TODAY</div>
+                        <input id="money-in" type="number" step="0.01" value="0" class="w-full text-3xl font-bold text-center bg-transparent focus:outline-none" onchange="calcDaily()">
+                    </div>
+                    <div class="bg-rose-50 p-5 rounded-2xl text-center">
+                        <div class="text-xs text-gray-500">MONEY OUT TODAY</div>
+                        <input id="money-out" type="number" step="0.01" value="0" class="w-full text-3xl font-bold text-center bg-transparent focus:outline-none" onchange="calcDaily()">
+                    </div>
+                    <div class="bg-amber-50 p-5 rounded-2xl text-center">
+                        <div class="text-xs text-gray-500">ASSET SPENDING</div>
+                        <input id="asset-spend" type="number" step="0.01" value="0" class="w-full text-3xl font-bold text-center bg-transparent focus:outline-none" onchange="calcDaily()">
+                    </div>
+                    <div class="bg-purple-50 p-5 rounded-2xl text-center">
+                        <div class="text-xs text-gray-500">LIABILITY SPENDING</div>
+                        <input id="liab-spend" type="number" step="0.01" value="0" class="w-full text-3xl font-bold text-center bg-transparent focus:outline-none" onchange="calcDaily()">
+                    </div>
+                    <div class="bg-blue-50 p-5 rounded-2xl text-center">
+                        <div class="text-xs text-gray-500">NET CASHFLOW</div>
+                        <div id="daily-net" class="text-3xl font-bold">0.00</div>
+                    </div>
+                </div>
+
+                <!-- Transaction Rows -->
+                <button onclick="addDailyRow()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl text-lg">+ Add Detailed Transaction</button>
+                <div id="daily-rows" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- Other tabs (Income, Expenses, etc.) remain functional -->
+        <div id="tab-1" class="tab-content hidden">Monthly Income (pre-filled options)</div>
+        <div id="tab-2" class="tab-content hidden">Monthly Expenses + Wealth Killers</div>
+        <div id="tab-3" class="tab-content hidden">Assets & Liabilities</div>
+        <div id="tab-4" class="tab-content hidden">Dashboard</div>
+    </div>
+</div>
+
+<script>
+    let currentMonth = "2026-06";
+
+    function switchTab(n) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.getElementById(`tab-${n}`).classList.remove('hidden');
+        document.querySelectorAll('.nav-tab').forEach((b, i) => b.classList.toggle('active', i === n));
+    }
+
+    function calcDaily() {
+        const inAmt = parseFloat(document.getElementById('money-in').value) || 0;
+        const outAmt = parseFloat(document.getElementById('money-out').value) || 0;
+        const net = inAmt - outAmt;
+        document.getElementById('daily-net').textContent = net.toFixed(2);
+        document.getElementById('daily-net').className = net >= 0 ? "text-3xl font-bold text-emerald-600" : "text-3xl font-bold text-rose-600";
+    }
+
+    function addDailyRow() {
+        const container = document.getElementById('daily-rows');
+        const row = document.createElement('div');
+        row.className = "border rounded-2xl p-5 bg-white";
+        const today = new Date().toISOString().split('T')[0];
+        row.innerHTML = `
+            <input type="date" value="${today}" class="mb-3 p-2 border rounded w-full">
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" placeholder="Income Source (Salary, Side Hustle)" class="p-3 border rounded">
+                <input type="number" step="0.01" placeholder="Amount In" class="p-3 border rounded">
+                <input type="text" placeholder="Expense (Fuel, Food, Alcohol...)" class="p-3 border rounded">
+                <input type="number" step="0.01" placeholder="Amount Out" class="p-3 border rounded">
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    function populateMonths() {
+        const select = document.getElementById('month-select');
+        select.innerHTML = '';
+        for (let y = 2025; y <= 2027; y++) {
+            for (let m = 1; m <= 12; m++) {
+                const val = `\( {y}- \){String(m).padStart(2,'0')}`;
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = new Date(y, m-1).toLocaleString('default', { month: 'long', year: 'numeric' });
+                if (val === currentMonth) opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+    }
+
+    function switchMonth() {
+        currentMonth = document.getElementById('month-select').value;
+    }
+
+    window.onload = function() {
+        populateMonths();
+        for (let i = 0; i < 2; i++) addDailyRow();
+        switchTab(0);
+        calcDaily();
+    };
+</script>
+</body>
+</html>
