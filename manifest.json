@@ -1,0 +1,22 @@
+{
+  "name": "Rich Dad Cashflow Tracker",
+  "short_name": "Cashflow",
+  "description": "Personal Finance Tracker - Rich Dad Style",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/1e40af/ffffff?text=💰",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/1e40af/ffffff?text=💰",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
