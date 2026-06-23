@@ -1,0 +1,24 @@
+{
+  "name": "CHAWK Cashflow Tracker",
+  "short_name": "CHAWK",
+  "description": "Rich Dad Style Personal Finance & Investment Tracker",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/8QJ2Z8K.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.imgur.com/8QJ2Z8K.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
